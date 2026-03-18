@@ -146,9 +146,10 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# Passwordless login with phone OTP
+# Passwordless login with phone OTP (plus default backend)
 AUTHENTICATION_BACKENDS = [
     "accounts.auth_backends.PhoneOTPBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Default primary key field type

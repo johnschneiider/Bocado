@@ -57,11 +57,15 @@ def get_admin_user_by_phone(*, phone: str, create_if_not_exists: bool = True):
 @transaction.atomic
 def get_or_create_admin_user(*, phone_digits: str):
     from django.contrib.auth import get_user_model
+    from accounts.models import RestaurantMembership
+    from restaurants.models import Restaurant, RestaurantLocation
 
     User = get_user_model()
     profile = UserProfile.objects.filter(phone=phone_digits).select_related("user").first()
     if profile:
         return profile.user
+    
+    # Create user and profile
     user = User.objects.create_user(username=f"admin_{phone_digits}")
     profile = UserProfile.objects.create(
         user=user,
@@ -69,6 +73,28 @@ def get_or_create_admin_user(*, phone_digits: str):
         phone=phone_digits,
         is_phone_verified=True,
     )
+    
+    # Create a default restaurant for this admin
+    restaurant = Restaurant.objects.create(
+        name=f"Restaurante {phone_digits[-4:]}",  # Use last 4 digits as name
+        phone=phone_digits,
+    )
+    
+    # Create a default location for the restaurant
+    RestaurantLocation.objects.create(
+        restaurant=restaurant,
+        name="Principal",
+        address_line1="Dirección por defecto",
+        is_primary=True,
+    )
+    
+    # Assign restaurant to user
+    RestaurantMembership.objects.create(
+        user=user,
+        restaurant=restaurant,
+        is_active=True,
+    )
+    
     return user
 
 
