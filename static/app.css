@@ -201,6 +201,35 @@ img{ max-width: 100%; height: auto; }
   .nav { justify-content: flex-start; }
 }
 
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+  .h1 {
+    font-size: 24px;
+  }
+  .topbar-inner {
+    padding: 10px 12px;
+  }
+  .brand {
+    font-size: 1rem;
+  }
+  .btn {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+  .card-body {
+    padding: 16px;
+  }
+  .menu-item {
+    flex-direction: column;
+  }
+  .menu-item__image {
+    width: 100%;
+    height: 120px;
+  }
+}
+
 label { 
   display: block; 
   margin-bottom: 8px; 
@@ -838,9 +867,38 @@ details[open] .chev {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 .fade-in {
   animation: fadeIn 300ms ease-out forwards;
 }
+
+/* Stagger animation for lists */
+.menu-item {
+  animation: fadeIn 300ms ease-out forwards;
+  opacity: 0;
+}
+
+@for $i from 1 through 20 {
+  .menu-item:nth-child(#{$i}) {
+    animation-delay: #{$i * 50}ms;
+  }
+}
+
+/* No CSS variables in pure CSS, using inline styles via JS or manual classes */
+.menu-item:nth-child(1) { animation-delay: 0ms; }
+.menu-item:nth-child(2) { animation-delay: 50ms; }
+.menu-item:nth-child(3) { animation-delay: 100ms; }
+.menu-item:nth-child(4) { animation-delay: 150ms; }
+.menu-item:nth-child(5) { animation-delay: 200ms; }
+.menu-item:nth-child(6) { animation-delay: 250ms; }
+.menu-item:nth-child(7) { animation-delay: 300ms; }
+.menu-item:nth-child(8) { animation-delay: 350ms; }
+.menu-item:nth-child(9) { animation-delay: 400ms; }
+.menu-item:nth-child(10) { animation-delay: 450ms; }
 
 /* Overlay de loading para HTMX */
 .htmx-indicator {

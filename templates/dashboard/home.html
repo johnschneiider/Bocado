@@ -1,15 +1,29 @@
 {% extends "base.html" %}
 {% load money %}
 
-{% block title %}Panel - Aladdin{% endblock %}
+{% block title %}Panel - Bocado{% endblock %}
 
 {% block content %}
   <div class="grid">
     <div class="col-12">
-      <h1 class="h1">Panel</h1>
-      <p class="muted">
-        Restaurante: <strong>{{ restaurant.name }}</strong>
-      </p>
+      <div class="header-gradient" style="margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+          <div>
+            <h1 style="margin: 0; font-size: 28px;">📊 Panel de Control</h1>
+            <p style="margin: 6px 0 0 0; opacity: 0.9;">
+              Restaurante: <strong>{{ restaurant.name }}</strong>
+            </p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <a href="{% url 'orders:list' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">
+              📦 Pedidos
+            </a>
+            <a href="{% url 'menus:list' %}" class="btn" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">
+              🍽️ Menús
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="col-12">
@@ -25,35 +39,42 @@
               <input type="date" name="end" value="{{ end|date:'Y-m-d' }}" />
             </div>
             <div class="col-4">
-              <button class="btn btn-primary" type="submit">Filtrar</button>
+              <button class="btn btn-primary" type="submit">
+                🔍 Filtrar
+              </button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
-    <div class="col-6">
-      <div class="card"><div class="card-body">
-        <div class="h2">Total pedidos</div>
-        <div style="font-size: 28px; font-weight: 700;">{{ kpis.total_orders }}</div>
+    <!-- KPI Cards con nuevo estilo -->
+    <div class="col-6 col-3">
+      <div class="card"><div class="card-body" style="text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 8px;">📦</div>
+        <div class="muted" style="font-size: 13px; margin-bottom: 4px;">Pedidos</div>
+        <div style="font-size: 28px; font-weight: 800; color: var(--brand);">{{ kpis.total_orders }}</div>
       </div></div>
     </div>
-    <div class="col-6">
-      <div class="card"><div class="card-body">
-        <div class="h2">Total vendido</div>
-        <div style="font-size: 28px; font-weight: 700;">{{ kpis.total_sold|money }}</div>
+    <div class="col-6 col-3">
+      <div class="card"><div class="card-body" style="text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 8px;">💰</div>
+        <div class="muted" style="font-size: 13px; margin-bottom: 4px;">Ventas</div>
+        <div style="font-size: 28px; font-weight: 800; color: var(--brand);">{{ kpis.total_sold|money }}</div>
       </div></div>
     </div>
-    <div class="col-6">
-      <div class="card"><div class="card-body">
-        <div class="h2">Total en crédito</div>
-        <div style="font-size: 28px; font-weight: 700;">{{ kpis.total_credit_sales|money }}</div>
+    <div class="col-6 col-3">
+      <div class="card"><div class="card-body" style="text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 8px;">⏰</div>
+        <div class="muted" style="font-size: 13px; margin-bottom: 4px;">Crédito</div>
+        <div style="font-size: 28px; font-weight: 800; color: var(--accent);">{{ kpis.total_credit_sales|money }}</div>
       </div></div>
     </div>
-    <div class="col-6">
-      <div class="card"><div class="card-body">
-        <div class="h2">Deuda pendiente</div>
-        <div style="font-size: 28px; font-weight: 700;">{{ kpis.debt_pending|money }}</div>
+    <div class="col-6 col-3">
+      <div class="card"><div class="card-body" style="text-align: center;">
+        <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+        <div class="muted" style="font-size: 13px; margin-bottom: 4px;">Deuda</div>
+        <div style="font-size: 28px; font-weight: 800; color: var(--danger);">{{ kpis.debt_pending|money }}</div>
       </div></div>
     </div>
 
@@ -64,7 +85,10 @@
         <div class="col-12 col-6">
           <div class="card"><div class="card-body">
             <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-              <div class="h2">Ventas (según filtro)</div>
+              <div class="h2" style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">📈</span>
+                Ventas (según filtro)
+              </div>
               <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap;">
                 <div class="muted" style="font-size: 13px;">Días</div>
                 <label class="switch" style="margin:0;" title="Cambiar entre días y meses">
@@ -80,21 +104,30 @@
 
         <div class="col-12 col-6">
           <div class="card"><div class="card-body">
-            <div class="h2">Ventas por día de la semana</div>
+            <div class="h2" style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 20px;">📅</span>
+              Ventas por día de la semana
+            </div>
             <canvas id="chartWeekday" style="width:100%; height: 260px;"></canvas>
           </div></div>
         </div>
 
         <div class="col-12 col-6">
           <div class="card"><div class="card-body">
-            <div class="h2">Top menús más vendidos</div>
+            <div class="h2" style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 20px;">🍽️</span>
+              Top menús más vendidos
+            </div>
             <canvas id="chartTopMenus" style="width:100%; height: 260px;"></canvas>
           </div></div>
         </div>
 
         <div class="col-12 col-6">
           <div class="card"><div class="card-body">
-            <div class="h2">Top clientes</div>
+            <div class="h2" style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 20px;">👥</span>
+              Top clientes
+            </div>
             <canvas id="chartTopCustomers" style="width:100%; height: 260px;"></canvas>
           </div></div>
         </div>
@@ -110,10 +143,12 @@
 
       const root = document.documentElement;
       const css = getComputedStyle(root);
-      const BRAND = (css.getPropertyValue("--brand") || "#ff2d55").trim();
-      const BRAND2 = (css.getPropertyValue("--brand-2") || "#ff5a7a").trim();
-      const MUTED = (css.getPropertyValue("--muted") || "#6b7280").trim();
-      const BORDER = "rgba(17, 24, 39, 0.10)";
+      const BRAND = (css.getPropertyValue("--brand") || "#2E7D32").trim();
+      const BRAND2 = (css.getPropertyValue("--brand-2") || "#4CAF50").trim();
+      const BRAND3 = (css.getPropertyValue("--brand-3") || "#8BC34A").trim();
+      const ACCENT = (css.getPropertyValue("--accent") || "#FF9800").trim();
+      const MUTED = (css.getPropertyValue("--muted") || "#6E6E6E").trim();
+      const BORDER = "rgba(46, 125, 50, 0.15)";
 
       function money(n) {
         const x = Math.round(Number(n || 0));
