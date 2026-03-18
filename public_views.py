@@ -59,10 +59,10 @@ class PublicRestaurantDetailView(View):
             restaurant=restaurant,
             date=today,
             is_visible=True
-        ).prefetch_related('items__item').order_by('title')
+        ).prefetch_related('menu_items__item').order_by('title')
         
         # Get active menus (visible and with items)
-        active_menus = menus.filter(items__isnull=False).distinct()
+        active_menus = menus.filter(menu_items__isnull=False).distinct()
         
         return render(request, self.template_name, {
             'restaurant': restaurant,
