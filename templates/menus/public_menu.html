@@ -63,11 +63,11 @@
                     <div class="menu-item__image">
                       🍽️
                     </div>
-                    <div class="menu-item__content">
-                      <div>
-                        <div class="menu-item__name">{{ mi.item.name }}</div>
-                        <div class="muted">{{ mi.price|money }}</div>
-                      </div>
+                  <div class="menu-item__content">
+                    <div>
+                      <div class="menu-item__name">{{ mi.item.name }}</div>
+                      <div class="menu-item__price">{{ mi.price|money }}</div>
+                    </div>
                       <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
                         <label style="margin: 0; font-size: 12px;">Cantidad:</label>
                         <input type="number" min="0" name="qty_{{ mi.id }}" value="0" style="width: 80px; text-align: center;" />
