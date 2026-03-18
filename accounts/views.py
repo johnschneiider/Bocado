@@ -34,8 +34,7 @@ class PhoneLoginStartView(View):
         user = get_admin_user_by_phone(phone=digits, create_if_not_exists=True)
         if user:
             # Use ModelBackend since we're bypassing OTP for MVP
-            from django.contrib.auth.backends import ModelBackend
-            login(request, user, backend=ModelBackend)
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             return redirect(request.GET.get("next") or "/dashboard/")
         
         messages.error(request, "No se pudo iniciar sesión. Intente de nuevo.")
