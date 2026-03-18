@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}{{ restaurant.name }} - Bocado{% endblock %}
+
+{% block content %}
+  <div class="menu-publico">
+    <!-- Header del restaurante -->
+    <div class="header-gradient" style="padding: 30px 0;">
+      <div class="container" style="max-width: 1100px;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <!-- Logo/Icono del restaurante -->
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 36px; flex-shrink: 0;">
+            🍽️
+          </div>
+          
+          <!-- Info del restaurante -->
+          <div style="flex: 1;">
+            <h1 style="margin: 0 0 8px; font-size: 28px;">{{ restaurant.name }}</h1>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+              <span style="opacity: 0.9;">📍 {{ restaurant.address|default:"Sin dirección" }}</span>
+              {% if restaurant.phone %}
+                <span style="opacity: 0.9;">📞 {{ restaurant.phone }}</span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <!-- Rating y stats -->
+          <div style="text-align: right;">
+            <div style="font-size: 24px; font-weight: 700; color: white;">4.5 ⭐</div>
+            <div style="font-size: 13px; opacity: 0.8;">128 reseñas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="max-width: 1100px;">
+      <!-- Tabs de navegación -->
+      <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid var(--border); padding-bottom: 0;">
+        <a href="#" class="btn" style="border-radius: 12px 12px 0 0; background: var(--brand); color: white;">
+          🍽️ Menú del día
+        </a>
+        <a href="#" class="btn" style="border-radius: 12px 12px 0 0;">
+          📋 Reseñas
+        </a>
+        <a href="#" class="btn" style="border-radius: 12px 12px 0 0;">
+          📍 Ubicación
+        </a>
+      </div>
+
+      <!-- Menús del día -->
+      {% if active_menus %}
+        <div style="margin-bottom: 32px;">
+          <h2 style="margin-bottom: 16px; font-size: 20px;">
+            🍽️ Menús de hoy
+          </h2>
+          
+          <div class="stack">
+            {% for menu in active_menus %}
+              <div class="card">
+                <div class="card-body">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                      <h3 style="margin: 0; font-size: 18px;">{{ menu.title }}</h3>
+                      {% if menu.description %}
+                        <p class="muted" style="margin: 4px 0 0; font-size: 14px;">{{ menu.description }}</p>
+                      {% endif %}
+                    </div>
+                    {% if menu.max_orders %}
+                      <span class="chip chip--urgent">
+                        🏃 Cupo: {{ menu.max_orders }}
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Lista de items -->
+                  <div class="grid" style="margin-bottom: 16px;">
+                    {% for mi in menu.items.all %}
+                      <div class="col-6">
+                        <div class="menu-item" style="margin-bottom: 12px;">
+                          <div class="menu-item__content" style="padding: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                              <div>
+                                <div class="menu-item__name">{{ mi.item.name }}</div>
+                                <div class="menu-item__price">{{ mi.price|money }}</div>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 8px;">
+                                <button class="btn" style="padding: 6px 12px;" onclick="decrementQty('{{ mi.id }}')">
+                                  -
+                                </button>
+                                <span id="qty-{{ mi.id }}" style="width: 24px; text-align: center;">0</span>
+                                <button class="btn" style="padding: 6px 12px;" onclick="incrementQty('{{ mi.id }}')">
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 40px;">
+          <span style="font-size: 48px; display: block; margin-bottom: 16px;">📭</span>
+          <h3>No hay menús activos hoy</h3>
+          <p class="muted">Vuelve mañana para ver los nuevos menús.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Sticky bottom para hacer pedido -->
+    {% if active_menus %}
+      <div class="sticky-bottom">
+        <div class="sticky-bottom__total">
+          Total: <span id="total-amount">$0</span>
+        </div>
+        <a href="{% url 'public_restaurant_order' restaurant.id %}" class="btn btn-primary" id="order-btn">
+          🛒 Hacer pedido
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    let quantities = {};
+    
+    function incrementQty(itemId) {
+      quantities[itemId] = (quantities[itemId] || 0) + 1;
+      updateDisplay(itemId);
+      updateTotal();
+    }
+    
+    function decrementQty(itemId) {
+      if (quantities[itemId] > 0) {
+        quantities[itemId]--;
+        updateDisplay(itemId);
+        updateTotal();
+      }
+    }
+    
+    function updateDisplay(itemId) {
+      const el = document.getElementById('qty-' + itemId);
+      if (el) el.textContent = quantities[itemId] || 0;
+    }
+    
+    function updateTotal() {
+      // This would calculate total based on prices
+      // For now, just update the order button URL with quantities
+      let total = 0;
+      // In a real implementation, get prices and calculate
+      document.getElementById('total-amount').textContent = '$' + total.toLocaleString('es-CO');
+    }
+    
+    // Store quantities in session
+    function proceedToOrder() {
+      sessionStorage.setItem('order_quantities', JSON.stringify(quantities));
+      // Redirect to order page
+      window.location.href = "{% url 'public_restaurant_order' restaurant.id %}";
+    }
+  </script>
+{% endblock %}

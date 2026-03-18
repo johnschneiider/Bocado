@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Hacer pedido - {{ restaurant.name }} - Bocado{% endblock %}
+
+{% block content %}
+  <div class="menu-publico">
+    <!-- Header -->
+    <div class="header-gradient" style="padding: 20px 0;">
+      <div class="container" style="max-width: 1100px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <a href="{% url 'public_restaurant_detail' restaurant.id %}" class="btn" style="background: rgba(255,255,255,0.2); color: white;">
+            ← Volver
+          </a>
+          <h2 style="margin: 0;">🛒 Hacer pedido en {{ restaurant.name }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="max-width: 1100px;">
+      <form method="post" class="stack">
+        {% csrf_token %}
+        
+        <!-- Info del cliente -->
+        <div class="card">
+          <div class="card-body">
+            <h3 style="margin-top: 0; margin-bottom: 16px;">📍 Información de entrega</h3>
+            <div class="grid">
+              <div class="col-6">
+                <label>Tu nombre</label>
+                <input name="customer_name" placeholder="Como te llamas" required />
+              </div>
+              <div class="col-6">
+                <label>Teléfono</label>
+                <input name="customer_phone" placeholder="+57 300 000 0000" required />
+              </div>
+              <div class="col-12">
+                <label>Dirección de entrega</label>
+                <input name="customer_address" placeholder="Barrio, calle, casa/apto" required />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selección de productos -->
+        <div class="card">
+          <div class="card-body">
+            <h3 style="margin-top: 0; margin-bottom: 16px;">🍽️ Selecciona tus platillos</h3>
+            
+            <div class="grid">
+              {% for item in items %}
+                <div class="col-6">
+                  <div class="menu-item" style="margin-bottom: 12px;">
+                    <div class="menu-item__content" style="padding: 12px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                          <div class="menu-item__name">{{ item.item.name }}</div>
+                          <div class="menu-item__price">{{ item.price|money }}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <button type="button" class="btn" style="padding: 6px 12px;" onclick="decrementQty('{{ item.id }}')">
+                            -
+                          </button>
+                          <input type="number" name="qty_{{ item.id }}" id="qty_{{ item.id }}" value="0" min="0" style="width: 48px; text-align: center; padding: 6px;" readonly />
+                          <button type="button" class="btn" style="padding: 6px 12px;" onclick="incrementQty('{{ item.id }}')">
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Método de pago -->
+        <div class="card">
+          <div class="card-body">
+            <h3 style="margin-top: 0; margin-bottom: 16px;">💳 Método de pago</h3>
+            <div class="grid">
+              <div class="col-6">
+                <label>Método</label>
+                <select name="payment_method" id="payment_method" onchange="toggleTransferRef()">
+                  <option value="CASH">💵 Efectivo</option>
+                  <option value="TRANSFER">🏦 Transferencia</option>
+                  <option value="CREDIT">⏰ Crédito</option>
+                </select>
+              </div>
+              <div class="col-6" id="transfer_ref_div" style="display: none;">
+                <label>Referencia de transferencia</label>
+                <input name="transfer_reference" placeholder="Ej: 12345" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de enviar -->
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 18px;">
+          🛒 Confirmar pedido
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function incrementQty(itemId) {
+      const input = document.getElementById('qty_' + itemId);
+      input.value = parseInt(input.value) + 1;
+    }
+    
+    function decrementQty(itemId) {
+      const input = document.getElementById('qty_' + itemId);
+      if (parseInt(input.value) > 0) {
+        input.value = parseInt(input.value) - 1;
+      }
+    }
+    
+    function toggleTransferRef() {
+      const method = document.getElementById('payment_method').value;
+      const div = document.getElementById('transfer_ref_div');
+      div.style.display = method === 'TRANSFER' ? 'block' : 'none';
+    }
+  </script>
+{% endblock %}

@@ -924,3 +924,19 @@ details[open] .chev {
   to { transform: translateX(0); opacity: 1; }
 }
 
+/* Dropdown styles */
+.dropdown-toggle {
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.dropdown:hover .dropdown-menu {
+  display: block !important;
+}
+.dropdown-menu a:hover {
+  background: var(--surface-2);
+}
+.dropdown-item {
+  transition: background 150ms ease;
+}
+

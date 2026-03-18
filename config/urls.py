@@ -18,14 +18,22 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
 
-from public_views import RootPreAuthView
+from public_views import RootPreAuthView, PublicHomeView, PublicRestaurantDetailView, PublicRestaurantOrderView
 
 urlpatterns = [
-    path("", RootPreAuthView.as_view(), name="root"),
+    # Vistas públicas tipo Didifood
+    path("", PublicHomeView.as_view(), name="home"),
+    path("r/<uuid:restaurant_id>/", PublicRestaurantDetailView.as_view(), name="public_restaurant_detail"),
+    path("r/<uuid:restaurant_id>/order/", PublicRestaurantOrderView.as_view(), name="public_restaurant_order"),
+    
+    # Vistas de negocio (admin)
     path("dashboard/", include("dashboard.urls")),
     path("accounts/", include("accounts.urls")),
     path("menus/", include("menus.urls")),
+    
+    # Vistas públicas existentes (mantener compatibilidad)
     path("m/", include("menus.public_urls")),
+    
     path("orders/", include("orders.urls")),
     path("credits/", include("credits.urls")),
     path("cliente/", include("credits.portal_urls")),

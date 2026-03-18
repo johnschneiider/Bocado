@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Pedido realizado - Bocado{% endblock %}
+
+{% block content %}
+  <div class="menu-publico">
+    <div class="container" style="max-width: 600px; padding: 40px 0;">
+      {% if error %}
+        <div class="card" style="text-align: center; padding: 40px;">
+          <span style="font-size: 64px; display: block; margin-bottom: 16px;">❌</span>
+          <h2>Oops! Algo salió mal</h2>
+          <p class="muted" style="margin-bottom: 24px;">{{ error }}</p>
+          <a href="{% url 'public_restaurant_detail' restaurant.id %}" class="btn btn-primary">
+            ← Volver al restaurante
+          </a>
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 40px;">
+          <span style="font-size: 64px; display: block; margin-bottom: 16px;">✅</span>
+          <h2>¡Pedido realizado con éxito!</h2>
+          <p class="muted" style="margin-bottom: 24px;">
+            Tu pedido #{{ order.id|truncatechars:8 }} ha sido enviado a {{ restaurant.name }}
+          </p>
+          
+          <div style="background: var(--surface-2); padding: 16px; border-radius: 12px; margin-bottom: 24px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Total:</span>
+              <strong>{{ order.total|money }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span>Método de pago:</span>
+              <span>{{ order.payment_method }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Estado:</span>
+              <span class="chip chip--urgent">{{ order.get_status_display }}</span>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <a href="{% url 'home' %}" class="btn">
+              🏠 Volver al inicio
+            </a>
+            <a href="{% url 'public_restaurant_detail' restaurant.id %}" class="btn btn-primary">
+              🍽️ Ver más menús
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Bocado - Encuentra tu comida favorita{% endblock %}
+
+{% block content %}
+  <div class="menu-publico">
+    <!-- Header principal estilo Didifood -->
+    <div class="header-gradient" style="padding: 40px 0;">
+      <div class="container" style="max-width: 1100px;">
+        <div style="text-align: center; max-width: 600px; margin: 0 auto;">
+          <h1 style="font-size: 32px; margin: 0 0 12px;">
+            🍽️ Bocado
+          </h1>
+          <p style="font-size: 18px; margin: 0 0 24px; opacity: 0.95;">
+            Encuentra los mejores restaurantes y haz tu pedido en pocos clics
+          </p>
+          
+          <!-- Buscador de restaurantes -->
+          <form method="get" action="{% url 'root' %}" style="display: flex; gap: 10px; max-width: 400px; margin: 0 auto;">
+            <input type="text" name="search" placeholder="Buscar restaurante..." style="flex: 1;" />
+            <button class="btn btn-accent" type="submit">
+              🔍 Buscar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de restaurantes -->
+    <div class="container" style="max-width: 1100px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">🏪</span>
+          Restaurantes disponibles
+        </h2>
+        <span class="muted">{{ restaurants|length }} restaurantes</span>
+      </div>
+
+      <!-- Grid de restaurantes -->
+      <div class="grid">
+        {% for restaurant in restaurants %}
+          <div class="col-6 col-4">
+            <div class="card restaurant-card" style="cursor: pointer;" onclick="window.location='{% url 'public_restaurant_detail' restaurant.id %}'">
+              <div class="card-body" style="padding: 0;">
+                <!-- Imagen del restaurante (placeholder) -->
+                <div class="restaurant-image" style="height: 120px; background: linear-gradient(135deg, var(--brand-2), var(--brand)); display: flex; align-items: center; justify-content: center;">
+                  <span style="font-size: 48px; color: white;">🍽️</span>
+                </div>
+                
+                <!-- Info del restaurante -->
+                <div style="padding: 16px;">
+                  <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                      <h3 class="restaurant-name" style="margin: 0 0 6px; font-size: 16px; font-weight: 700;">
+                        {{ restaurant.name }}
+                      </h3>
+                      <p class="muted" style="margin: 0; font-size: 13px;">
+                        {{ restaurant.address|default:"Sin dirección" }}
+                      </p>
+                    </div>
+                    <span class="chip" style="background: rgba(46, 125, 50, 0.1); color: var(--brand);">
+                      📍 {{ restaurant.locations.count|default:1 }}
+                    </span>
+                  </div>
+                  
+                  <!-- Stats -->
+                  <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--muted);">
+                    <span>🍽️ Menús activos</span>
+                    <span>⭐ 4.5</span>
+                  </div>
+                </div>
+                
+                <!-- Botón de acción -->
+                <div style="padding: 0 16px 16px;">
+                  <a href="{% url 'public_restaurant_detail' restaurant.id %}" class="btn btn-primary" style="width: 100%;">
+                    Ver menú →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="col-12">
+            <div class="card" style="text-align: center; padding: 40px;">
+              <span style="font-size: 48px; display: block; margin-bottom: 16px;">😔</span>
+              <h3>No hay restaurantes disponibles</h3>
+              <p class="muted">Vuelve más tarde para ver los menús del día.</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

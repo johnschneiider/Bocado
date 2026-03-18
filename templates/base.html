@@ -19,22 +19,52 @@
           <span>Bocado</span>
         </a>
         <nav class="nav">
+          <!-- Botón de inicio (para todos) -->
+          <a href="{% url 'home' %}">🏠 Inicio</a>
+          
           {% if user.is_authenticated %}
-            <a href="/dashboard/">Panel</a>
-            <a href="{% url 'menus:list' %}">Menús</a>
-            <a href="{% url 'orders:list' %}">Pedidos</a>
-            <a href="{% url 'credits:customers_list' %}">Clientes</a>
-            <a href="{% url 'accounts:logout' %}">Salir</a>
-          {% else %}
-            {% if request.session.customer_id %}
-              <a href="/cliente/">Mi panel</a>
-              <form method="post" action="/cliente/logout/" style="display:inline;">
-                {% csrf_token %}
-                <button class="btn" type="submit" style="padding: 8px 10px;">Salir</button>
-              </form>
-            {% else %}
-              <a href="/">Ingresar</a>
+            <!-- Menú de negocio (admin) -->
+            {% if user.is_staff %}
+              <a href="/dashboard/">📊 Panel</a>
+              <a href="{% url 'menus:list' %}">🍽️ Menús</a>
+              <a href="{% url 'orders:list' %}">📦 Pedidos</a>
+              <a href="{% url 'credits:customers_list' %}">👥 Clientes</a>
             {% endif %}
+            
+            <!-- Dropdown de usuario -->
+            <div class="dropdown" style="position: relative;">
+              <button class="btn dropdown-toggle" style="display: flex; align-items: center; gap: 8px;">
+                <span>👤</span>
+                <span>{{ user.username }}</span>
+              </button>
+              <div class="dropdown-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); min-width: 200px; z-index: 1000; margin-top: 8px;">
+                <a href="{% url 'home' %}" class="dropdown-item" style="display: block; padding: 12px 16px; text-decoration: none; color: var(--text); border-bottom: 1px solid var(--border);">
+                  🏠 Ver como cliente
+                </a>
+                <a href="/dashboard/" class="dropdown-item" style="display: block; padding: 12px 16px; text-decoration: none; color: var(--text); border-bottom: 1px solid var(--border);">
+                  🏪 Mi negocio
+                </a>
+                <a href="{% url 'accounts:logout' %}" class="dropdown-item" style="display: block; padding: 12px 16px; text-decoration: none; color: var(--danger);">
+                  🚪 Salir
+                </a>
+              </div>
+            </div>
+          {% else %}
+            <!-- Para usuarios no autenticados (clientes) -->
+            <div class="dropdown" style="position: relative;">
+              <button class="btn dropdown-toggle" style="display: flex; align-items: center; gap: 8px;">
+                <span>👤</span>
+                <span>Iniciar sesión</span>
+              </button>
+              <div class="dropdown-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); min-width: 200px; z-index: 1000; margin-top: 8px;">
+                <a href="{% url 'home' %}" class="dropdown-item" style="display: block; padding: 12px 16px; text-decoration: none; color: var(--text); border-bottom: 1px solid var(--border);">
+                  🍽️ Iniciar como cliente
+                </a>
+                <a href="{% url 'accounts:login' %}" class="dropdown-item" style="display: block; padding: 12px 16px; text-decoration: none; color: var(--text);">
+                  🏪 Registrarme como negocio
+                </a>
+              </div>
+            </div>
           {% endif %}
         </nav>
       </div>
