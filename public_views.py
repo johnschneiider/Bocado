@@ -39,7 +39,7 @@ class PublicHomeView(View):
             status='ACTIVE',
             id__in=today_menu_filter
         ).annotate(
-            menu_count=Count('menus', filter=Q(menus__is_visible=True))
+            menu_count=Count('daily_menus', filter=Q(daily_menus__is_visible=True))
         )
         
         return render(request, self.template_name, {'restaurants': restaurants})
