@@ -4,9 +4,11 @@ SaaS para restaurantes pequeños/medianos en LATAM: menú diario, pedidos, venta
 
 ### Stack
 - **Backend**: Django 4.2
-- **DB**: SQLite (modelado para migrar a PostgreSQL)
+- **DB**: PostgreSQL (production) / SQLite (development)
 - **Frontend**: Django Templates + **HTMX**
 - **Auth**: Django Auth (extensible)
+- **Cache**: Django Cache (default: LocMemCache, configurable to Redis)
+- **Rate Limiting**: Custom decorator for public endpoints
 
 ### Apps
 - `accounts`: usuarios admin (SaaS admin / restaurant admin) + memberships
@@ -52,7 +54,38 @@ Luego abre:
 
 Credenciales demo:
 - Usuario: `demo_admin`
-- Login: **solo teléfono** (sin OTP). Teléfono permitido: `3117451274`.
+- Login: **solo teléfono** (sin OTP). Puedes usar cualquier teléfono para login de admin.
+
+### 🔧 Escalabilidad implementada
+
+1. **🔒 Seguridad**
+   - SECRET_KEY ahora está en variables de entorno (`.env`)
+   - `DEBUG = False` en producción vía variable de entorno
+
+2. **⚡ Performance**
+   - Índices de base de datos en campos frecuentes (Order, Debt, etc.)
+   - Cache en dashboard (5 minutos)
+   - Rate limiting (30 req/min vista menú, 5 req/min creación pedido)
+
+3. **🗄️ Database**
+   - Soporte para PostgreSQL (production) y SQLite (dev)
+   - Configuración vía `DATABASE_URL`
+
+4. **🔍 Monitoreo**
+   - Headers `X-RateLimit-*` en respuestas de rate limiting
+
+### ⚠️ Notas de producción
+
+1. Configura PostgreSQL:
+   ```bash
+   DATABASE_URL=postgres://user:password@localhost:5432/dbname
+   ```
+
+2. Para cache distribuido (opcional):
+   ```bash
+   REDIS_URL=redis://localhost:6379/0
+   ```
+   Y actualiza `config/settings.py` para usar Redis.
 
 ### Rutas (MVP)
 - `/` preauth por teléfono
