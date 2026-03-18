@@ -33,8 +33,12 @@ class PhoneLoginStartView(View):
         # Try admin login first (any phone can be admin)
         user = get_admin_user_by_phone(phone=digits, create_if_not_exists=True)
         if user:
-            login(request, user, backend="accounts.auth_backends.PhoneOTPBackend")
+            # Use default backend since we're bypassing OTP for MVP
+            login(request, user)
             return redirect(request.GET.get("next") or "/dashboard/")
+        
+        messages.error(request, "No se pudo iniciar sesión. Intente de nuevo.")
+        return render(request, self.template_name, status=400)
 
 
 class AdminLogoutView(LogoutView):
