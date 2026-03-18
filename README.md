@@ -1,6 +1,23 @@
-## Aladdin (MVP) — Django + HTMX
+## Bocado (Antes Aladdin) — Django + HTMX
 
-SaaS para restaurantes pequeños/medianos en LATAM: menú diario, pedidos, ventas a crédito, deudas y pagos.
+Plataforma de pedidos de comida estilo **Didifood** (SaaS + Clientes).
+
+### 🆕 Nuevas funcionalidades (Rebranding)
+
+1. **Vista pública tipo Didifood**:
+   - Home con grid de restaurantes
+   - Cards de restaurantes con info básica
+   - Vista detalle de restaurante con menús del día
+   - Flujo de pedido intuitivo
+
+2. **Navbar con dropdown de usuario**:
+   - Icono de usuario con menú desplegable
+   - Opción "Ver como cliente" / "Mi negocio"
+   - Opción para registrarse como negocio
+
+3. **Flujo de login**:
+   - **Clientes**: Acceso directo a ver restaurantes (sin login requerido)
+   - **Negocios**: Login con teléfono para acceder al dashboard
 
 ### Stack
 - **Backend**: Django 4.2
@@ -87,12 +104,20 @@ Credenciales demo:
    ```
    Y actualiza `config/settings.py` para usar Redis.
 
-### Rutas (MVP)
-- `/` preauth por teléfono
-- `/dashboard/` dashboard negocio (custom)
-- `/accounts/login/` login
-- `/menus/` menús por fecha
-- `/orders/` pedidos
-- `/credits/customers/` clientes + pagos
-- `/m/<restaurant_uuid>/YYYY-MM-DD/` menú público para clientes (sin login)
+### Rutas
+
+**Vistas Públicas (Clientes):**
+- `/` Home con lista de restaurantes
+- `/r/<restaurant_uuid>/` Detalle de restaurante y menús
+- `/r/<restaurant_uuid>/order/` Hacer pedido en restaurante
+
+**Vistas de Negocio (Admin):**
+- `/dashboard/` Panel de control
+- `/accounts/login/` Login para negocios
+- `/menus/` Gestión de menús
+- `/orders/` Gestión de pedidos
+- `/credits/customers/` Gestión de clientes y créditos
+
+**Vistas compatibles:**
+- `/m/<restaurant_uuid>/YYYY-MM-DD/` Menú público antiguo
 
