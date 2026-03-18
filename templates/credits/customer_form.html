@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo cliente - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Nuevo cliente</h1>
+      <p class="muted">Crea un cliente para registrar crédito y pagos.</p>
+    </div>
+    <div class="col-12 col-6">
+      <div class="card">
+        <div class="card-body">
+          <form method="post" class="stack">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary" type="submit">Guardar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

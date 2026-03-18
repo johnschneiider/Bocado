@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Cliente {{ customer.full_name }} - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">{{ customer.full_name }}</h1>
+      <p class="muted">{{ customer.phone }} {{ customer.email }}</p>
+      <div style="display:flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+        <button
+          class="btn btn-primary"
+          type="button"
+          hx-get="{% url 'credits:customers_orders_modal' customer.id %}"
+          hx-target="body"
+          hx-swap="beforeend"
+        >Ver historial de pedidos</button>
+      </div>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Deuda pendiente</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ outstanding|money }}</div>
+      </div></div>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Registrar pago</div>
+        <form method="post" action="{% url 'credits:payments_new' customer.id %}" class="stack" style="margin-top: 12px;">
+          {% csrf_token %}
+          {{ payment_form.as_p }}
+          <button class="btn btn-primary" type="submit">Registrar</button>
+        </form>
+      </div></div>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Deudas</div>
+        {% if debts %}
+          <div class="stack" style="margin-top: 12px;">
+            {% for d in debts %}
+              <div>
+                <div style="font-weight:700;">{{ d.opened_at|date:"Y-m-d H:i" }} · {{ d.get_status_display }}</div>
+                <div class="muted">Original: {{ d.amount_original|money }} · Pagado: {{ d.amount_paid|money }}</div>
+              </div>
+              {% if not forloop.last %}<hr style="border: none; border-top: 1px solid var(--border); width: 100%;"/>{% endif %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="muted" style="margin-top: 8px;">Sin deudas.</div>
+        {% endif %}
+      </div></div>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Pagos</div>
+        {% if payments %}
+          <div class="stack" style="margin-top: 12px;">
+            {% for p in payments %}
+              <div>
+                <div style="font-weight:700;">{{ p.paid_at|date:"Y-m-d H:i" }} · {{ p.get_method_display }} · {{ p.amount|money }}</div>
+                {% if p.reference %}<div class="muted">Ref: {{ p.reference }}</div>{% endif %}
+              </div>
+              {% if not forloop.last %}<hr style="border: none; border-top: 1px solid var(--border); width: 100%;"/>{% endif %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="muted" style="margin-top: 8px;">Sin pagos.</div>
+        {% endif %}
+      </div></div>
+    </div>
+  </div>
+{% endblock %}
+

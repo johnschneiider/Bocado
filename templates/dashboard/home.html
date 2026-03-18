@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Panel - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Panel</h1>
+      <p class="muted">
+        Restaurante: <strong>{{ restaurant.name }}</strong>
+      </p>
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <form method="get" class="grid" style="align-items: end;">
+            <div class="col-4">
+              <label>Desde</label>
+              <input type="date" name="start" value="{{ start|date:'Y-m-d' }}" />
+            </div>
+            <div class="col-4">
+              <label>Hasta</label>
+              <input type="date" name="end" value="{{ end|date:'Y-m-d' }}" />
+            </div>
+            <div class="col-4">
+              <button class="btn btn-primary" type="submit">Filtrar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Total pedidos</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ kpis.total_orders }}</div>
+      </div></div>
+    </div>
+    <div class="col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Total vendido</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ kpis.total_sold|money }}</div>
+      </div></div>
+    </div>
+    <div class="col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Total en crédito</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ kpis.total_credit_sales|money }}</div>
+      </div></div>
+    </div>
+    <div class="col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Deuda pendiente</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ kpis.debt_pending|money }}</div>
+      </div></div>
+    </div>
+
+    {{ charts|json_script:"dashboard-charts" }}
+
+    <div class="col-12">
+      <div class="grid">
+        <div class="col-12 col-6">
+          <div class="card"><div class="card-body">
+            <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+              <div class="h2">Ventas (según filtro)</div>
+              <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap;">
+                <div class="muted" style="font-size: 13px;">Días</div>
+                <label class="switch" style="margin:0;" title="Cambiar entre días y meses">
+                  <input id="salesMode" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+                <div class="muted" style="font-size: 13px;">Meses</div>
+              </div>
+            </div>
+            <canvas id="chartSales" style="width:100%; height: 260px;"></canvas>
+          </div></div>
+        </div>
+
+        <div class="col-12 col-6">
+          <div class="card"><div class="card-body">
+            <div class="h2">Ventas por día de la semana</div>
+            <canvas id="chartWeekday" style="width:100%; height: 260px;"></canvas>
+          </div></div>
+        </div>
+
+        <div class="col-12 col-6">
+          <div class="card"><div class="card-body">
+            <div class="h2">Top menús más vendidos</div>
+            <canvas id="chartTopMenus" style="width:100%; height: 260px;"></canvas>
+          </div></div>
+        </div>
+
+        <div class="col-12 col-6">
+          <div class="card"><div class="card-body">
+            <div class="h2">Top clientes</div>
+            <canvas id="chartTopCustomers" style="width:100%; height: 260px;"></canvas>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const dataEl = document.getElementById("dashboard-charts");
+      if (!dataEl) return;
+      const CHARTS = JSON.parse(dataEl.textContent || "{}");
+
+      const root = document.documentElement;
+      const css = getComputedStyle(root);
+      const BRAND = (css.getPropertyValue("--brand") || "#ff2d55").trim();
+      const BRAND2 = (css.getPropertyValue("--brand-2") || "#ff5a7a").trim();
+      const MUTED = (css.getPropertyValue("--muted") || "#6b7280").trim();
+      const BORDER = "rgba(17, 24, 39, 0.10)";
+
+      function money(n) {
+        const x = Math.round(Number(n || 0));
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      }
+
+      function ellipsize(ctx, text, maxWidth) {
+        const s = (text || "").toString();
+        if (ctx.measureText(s).width <= maxWidth) return s;
+        const ell = "…";
+        let lo = 0, hi = s.length;
+        while (lo < hi) {
+          const mid = Math.floor((lo + hi) / 2);
+          const cand = s.slice(0, mid) + ell;
+          if (ctx.measureText(cand).width <= maxWidth) lo = mid + 1;
+          else hi = mid;
+        }
+        const n = Math.max(1, lo - 1);
+        return s.slice(0, n) + ell;
+      }
+
+      function setupCanvas(canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return ctx;
+      }
+
+      function clear(ctx, w, h) {
+        ctx.clearRect(0, 0, w, h);
+      }
+
+      function drawLineChart(canvas, labels, values, opts) {
+        const ctx = setupCanvas(canvas);
+        const w = canvas.getBoundingClientRect().width;
+        const h = canvas.getBoundingClientRect().height;
+        clear(ctx, w, h);
+
+        const padL = 44, padR = 16, padT = 16, padB = 34;
+        const cw = w - padL - padR;
+        const ch = h - padT - padB;
+
+        const maxV = Math.max(1, ...values);
+        const yMax = Math.ceil(maxV * 1.1);
+
+        // Axes
+        ctx.strokeStyle = BORDER;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, padT);
+        ctx.lineTo(padL, padT + ch);
+        ctx.lineTo(padL + cw, padT + ch);
+        ctx.stroke();
+
+        // Y ticks
+        ctx.fillStyle = MUTED;
+        ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        const ticks = 4;
+        for (let i = 0; i <= ticks; i++) {
+          const t = i / ticks;
+          const y = padT + ch - t * ch;
+          const v = Math.round(t * yMax);
+          ctx.strokeStyle = "rgba(17, 24, 39, 0.06)";
+          ctx.beginPath();
+          ctx.moveTo(padL, y);
+          ctx.lineTo(padL + cw, y);
+          ctx.stroke();
+          ctx.fillText(money(v), 6, y + 4);
+        }
+
+        // X labels (sparse)
+        const n = values.length;
+        const step = n > 16 ? Math.ceil(n / 8) : 1;
+        ctx.fillStyle = MUTED;
+        for (let i = 0; i < n; i += step) {
+          const x = padL + (i / Math.max(1, n - 1)) * cw;
+          const label = labels[i] || "";
+          ctx.fillText(label, x - 10, padT + ch + 22);
+        }
+
+        // Line (dashed) + markers
+        ctx.strokeStyle = BRAND;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+          const v = values[i] || 0;
+          const x = padL + (i / Math.max(1, n - 1)) * cw;
+          const y = padT + ch - (v / yMax) * ch;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        for (let i = 0; i < n; i++) {
+          const v = values[i] || 0;
+          const x = padL + (i / Math.max(1, n - 1)) * cw;
+          const y = padT + ch - (v / yMax) * ch;
+          ctx.fillStyle = "#fff";
+          ctx.strokeStyle = BRAND2;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+
+      // Polyfill-ish for roundRect if not supported
+      if (!CanvasRenderingContext2D.prototype.roundRect) {
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+          const radius = Math.min(r || 0, w / 2, h / 2);
+          this.beginPath();
+          this.moveTo(x + radius, y);
+          this.arcTo(x + w, y, x + w, y + h, radius);
+          this.arcTo(x + w, y + h, x, y + h, radius);
+          this.arcTo(x, y + h, x, y, radius);
+          this.arcTo(x, y, x + w, y, radius);
+          this.closePath();
+          return this;
+        };
+      }
+
+      function drawBarChart(canvas, labels, values, opts) {
+        const ctx = setupCanvas(canvas);
+        const w = canvas.getBoundingClientRect().width;
+        const h = canvas.getBoundingClientRect().height;
+        clear(ctx, w, h);
+
+        const padL = 44, padR = 16, padT = 16, padB = 44;
+        const cw = w - padL - padR;
+        const ch = h - padT - padB;
+
+        const maxV = Math.max(1, ...values);
+        const yMax = Math.ceil(maxV * 1.1);
+
+        // Axes
+        ctx.strokeStyle = BORDER;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, padT);
+        ctx.lineTo(padL, padT + ch);
+        ctx.lineTo(padL + cw, padT + ch);
+        ctx.stroke();
+
+        // Bars
+        const n = values.length;
+        const gap = 10;
+        const bw = Math.max(12, (cw - gap * (n - 1)) / Math.max(1, n));
+        ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        const valueFmt = (opts && opts.valueFormatter) ? opts.valueFormatter : (v) => String(v);
+        for (let i = 0; i < n; i++) {
+          const v = values[i] || 0;
+          const barH = (v / yMax) * ch;
+          const x = padL + i * (bw + gap);
+          const y = padT + ch - barH;
+          ctx.fillStyle = "rgba(255, 45, 85, 0.22)";
+          ctx.strokeStyle = "rgba(255, 45, 85, 0.38)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          const r = 10;
+          ctx.roundRect(x, y, bw, barH, r);
+          ctx.fill();
+          ctx.stroke();
+
+          // X label (horizontal, truncated)
+          ctx.fillStyle = MUTED;
+          ctx.textAlign = "center";
+          const label = (labels[i] || "").toString();
+          const short = ellipsize(ctx, label, Math.max(10, bw));
+          ctx.fillText(short, x + bw / 2, padT + ch + 22);
+
+          ctx.fillStyle = "#111827";
+          ctx.textAlign = "center";
+          ctx.fillText(valueFmt(v), x + bw / 2, y - 6);
+        }
+      }
+
+      function drawPieChart(canvas, labels, values) {
+        const ctx = setupCanvas(canvas);
+        const w = canvas.getBoundingClientRect().width;
+        const h = canvas.getBoundingClientRect().height;
+        clear(ctx, w, h);
+
+        const total = values.reduce((a, b) => a + (Number(b) || 0), 0) || 1;
+        const cx = w * 0.35;
+        const cy = h * 0.52;
+        const radius = Math.min(w, h) * 0.28;
+
+        // Distinct (but still soft) palette
+        const colors = [
+          BRAND,
+          "#60a5fa", // blue
+          "#34d399", // green
+          "#fbbf24", // amber
+          "#a78bfa", // purple
+          "#fb7185", // pink
+          "#94a3b8", // slate
+        ];
+
+        let start = -Math.PI / 2;
+        for (let i = 0; i < values.length; i++) {
+          const v = Number(values[i] || 0);
+          const ang = (v / total) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.arc(cx, cy, radius, start, start + ang);
+          ctx.closePath();
+          ctx.fill();
+          start += ang;
+        }
+
+        // Legend
+        ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        ctx.fillStyle = MUTED;
+        const lx = w * 0.62;
+        let ly = h * 0.22;
+        for (let i = 0; i < labels.length; i++) {
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.fillRect(lx, ly - 10, 10, 10);
+          ctx.fillStyle = "#111827";
+          ctx.fillText(`${labels[i]}: ${money(values[i] || 0)}`, lx + 16, ly);
+          ly += 20;
+        }
+      }
+
+      const elSales = document.getElementById("chartSales");
+      const elWeekday = document.getElementById("chartWeekday");
+      const elMenus = document.getElementById("chartTopMenus");
+      const elCustomers = document.getElementById("chartTopCustomers");
+      const elMode = document.getElementById("salesMode");
+
+      function renderAll() {
+        if (elSales) {
+          const modeMonths = elMode && elMode.checked;
+          const ds = modeMonths ? CHARTS.sales_monthly_12 : CHARTS.sales_daily_30;
+          drawLineChart(elSales, ds.labels || [], ds.values || []);
+        }
+        if (elWeekday) {
+          drawPieChart(elWeekday, (CHARTS.sales_weekday?.labels || []), (CHARTS.sales_weekday?.values || []));
+        }
+        if (elMenus) {
+          drawBarChart(elMenus, (CHARTS.top_menus?.labels || []), (CHARTS.top_menus?.values || []), { valueFormatter: (v) => String(v) });
+        }
+        if (elCustomers) {
+          drawBarChart(elCustomers, (CHARTS.top_customers?.labels || []), (CHARTS.top_customers?.values || []), { valueFormatter: money });
+        }
+      }
+
+      if (elMode) elMode.addEventListener("change", renderAll);
+      window.addEventListener("resize", () => {
+        window.requestAnimationFrame(renderAll);
+      });
+
+      renderAll();
+    })();
+  </script>
+{% endblock %}
+

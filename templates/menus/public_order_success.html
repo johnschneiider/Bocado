@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Pedido enviado - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Resultado</h1>
+      <p class="muted">{{ restaurant.name }} · {{ menu.date }}</p>
+    </div>
+
+    <div class="col-12 col-8">
+      <div class="card">
+        <div class="card-body">
+          {% if error %}
+            <div class="h2" style="color: var(--danger);">No se pudo crear el pedido</div>
+            <p class="muted">{{ error }}</p>
+          {% else %}
+            <div class="h2">Pedido recibido</div>
+            <p class="muted">Tu pedido fue registrado con ID: <strong>{{ order.id }}</strong></p>
+          {% endif %}
+
+          <a class="btn btn-primary" href="{% url 'public_menus:menu' restaurant.id menu.date|date:'Y-m-d' %}">Volver al menú</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

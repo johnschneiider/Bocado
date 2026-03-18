@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Clientes - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12" style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <div>
+        <h1 class="h1">Gestión de deudas</h1>
+        <p class="muted">Por defecto se muestran solo los clientes que deben.</p>
+      </div>
+      <a class="btn btn-primary" href="{% url 'credits:customers_new' %}">Nuevo cliente</a>
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div style="display:flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
+            <a class="btn {% if status_filter == 'due' %}btn-primary{% endif %}" href="?status=due">Aún deben</a>
+            <a class="btn {% if status_filter == 'paid' %}btn-primary{% endif %}" href="?status=paid">Pagaron</a>
+            <a class="btn {% if status_filter == 'all' %}btn-primary{% endif %}" href="?status=all">Todos</a>
+          </div>
+
+          {% if customers %}
+            <div class="table-scroll">
+              <table class="table" style="min-width: 900px;">
+                <thead>
+                  <tr class="muted">
+                    <th>Cliente</th>
+                    <th>Contacto</th>
+                    <th>Total</th>
+                    <th>Pagó</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for c in customers %}
+                    {% include "credits/_customer_row.html" with c=c %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="muted">No hay clientes para este filtro.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Ingresar - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Ingresar</h1>
+      <p class="muted">Ingresa tu teléfono para entrar (sin contraseñas ni códigos).</p>
+    </div>
+    <div class="col-12 col-6">
+      <div class="card">
+        <div class="card-body stack">
+          <form method="post" class="stack">
+            {% csrf_token %}
+            <div>
+              <label>Teléfono</label>
+              <input name="phone" placeholder="3117451274" required />
+            </div>
+            <button class="btn btn-primary" type="submit">Ingresar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

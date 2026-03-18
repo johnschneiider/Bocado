@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}{% if form.instance.pk %}Editar menú - Aladdin{% else %}Nuevo menú - Aladdin{% endif %}{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      {% if form.instance.pk %}
+        <h1 class="h1">Editar menú</h1>
+        <p class="muted">Puedes cambiar la imagen y el cupo máximo de pedidos.</p>
+      {% else %}
+        <h1 class="h1">Nuevo menú</h1>
+        <p class="muted">Se crea automáticamente para hoy (usa la hora de creación).</p>
+      {% endif %}
+    </div>
+    <div class="col-12 col-6">
+      <div class="card">
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" class="stack">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary" type="submit">{% if form.instance.pk %}Guardar cambios{% else %}Crear{% endif %}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    {% if form.instance.pk %}
+      <div class="col-12 col-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="h2">Ítems del menú</div>
+            {% if menu_items %}
+              <div class="stack" style="margin-top: 12px;">
+                {% for mi in menu_items %}
+                  <div style="display:flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <div>
+                      <div style="font-weight:700;">{{ mi.item.name }}</div>
+                      <div class="muted">{{ mi.price|money }}</div>
+                    </div>
+                  </div>
+                  {% if not forloop.last %}<hr style="border: none; border-top: 1px solid var(--border); width: 100%;"/>{% endif %}
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="muted" style="margin-top: 8px;">Aún no hay ítems en este menú.</div>
+            {% endif %}
+
+            <div class="h2" style="margin-top: 16px;">Agregar ítem</div>
+            <form method="post" action="{% url 'menus:add_item' form.instance.id %}" class="stack" style="margin-top: 12px;">
+              {% csrf_token %}
+              {{ add_item_form.as_p }}
+              <button class="btn btn-primary" type="submit">Agregar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+

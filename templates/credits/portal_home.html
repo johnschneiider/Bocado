@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Mi panel - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Mi panel</h1>
+      <p class="muted">Teléfono: {{ customer.phone }}</p>
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="h2">Menús activos</div>
+
+          {% if menu_cards %}
+            <div class="stack" style="margin-top: 12px;">
+              {% for menu, items in menu_cards %}
+                <details class="accordion">
+                  <summary class="accordion__summary">
+                    <div class="product-card">
+                      <div class="product-card__media">
+                        {% if menu.image %}
+                          <img class="product-card__img" src="{{ menu.image.url }}" alt="Menú {{ menu.date }}" />
+                        {% else %}
+                          <div style="height:100%; display:flex; align-items:center; justify-content:center;" class="muted">Sin imagen</div>
+                        {% endif %}
+                      </div>
+                      <div style="display:flex; align-items:flex-start; justify-content: space-between; gap: 12px;">
+                        <div>
+                          <div class="product-card__title">{{ menu.title }}</div>
+                          {% if menu.description %}
+                            <div class="muted" style="margin-top: 4px;">{{ menu.description }}</div>
+                          {% endif %}
+                          <div class="product-card__meta">
+                            <span class="chip">{{ menu.date }} · {{ menu.created_at|date:"H:i" }}</span>
+                            {% if menu.visible_until %}<span class="chip">Activo hasta {{ menu.visible_until|date:"d/m H:i" }}</span>{% endif %}
+                            <span
+                              id="availability-{{ menu.id }}"
+                              hx-get="{% url 'customer_portal:menu_availability' menu.id %}"
+                              hx-trigger="load, every 3s"
+                              hx-swap="outerHTML"
+                              class="chip"
+                            >Cargando cupo…</span>
+                          </div>
+                          <div class="accordion__hint">
+                            <span>Ver opciones y comprar</span>
+                            <span class="chev" aria-hidden="true"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </summary>
+
+                  <div class="accordion__content">
+                    {% if not is_profile_complete %}
+                      <div class="card" style="border-radius: 12px;">
+                        <div class="card-body">
+                          <div class="h2">Antes de pedir</div>
+                          <p class="muted">Completa tu nombre y dirección para poder comprar.</p>
+                          <a class="btn btn-primary" href="/cliente/perfil/">Completar datos</a>
+                        </div>
+                      </div>
+                    {% else %}
+                      <form method="post" action="{% url 'customer_portal:order' %}" class="stack" style="margin-top: 12px;" data-menu-id="{{ menu.id }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="menu_id" value="{{ menu.id }}" />
+
+                        <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                          <div>
+                            <div style="font-weight:700;">¿Menú completo?</div>
+                            <div class="muted" style="margin-top: 2px;">Incluye sopa.</div>
+                          </div>
+                          <label class="switch fullmenu-switch" style="margin: 0;">
+                            <input type="checkbox" name="is_full_menu" value="1" />
+                            <span class="slider"></span>
+                            <span class="fullmenu-text">
+                              <span class="off">Bandeja</span>
+                              <span class="on">Bandeja y Sopa</span>
+                            </span>
+                          </label>
+                        </div>
+
+                        <div class="grid">
+                          <div class="col-6">
+                            <label>Método de pago</label>
+                            <select name="payment_method">
+                              <option value="CASH">Contado</option>
+                              <option value="TRANSFER">Transferencia</option>
+                              <option value="CREDIT">Crédito</option>
+                            </select>
+                          </div>
+                          <div class="col-6">
+                            <label>Referencia transferencia (opcional)</label>
+                            <input name="transfer_reference" placeholder="Ej: 12345" />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label>Mensaje para el negocio (opcional)</label>
+                          <input name="customer_note" maxlength="255" placeholder="Ej: Sin cebolla, por favor" />
+                        </div>
+
+                        <button class="btn btn-primary buy-btn" type="submit">Comprar</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="muted" style="margin-top: 8px;">No hay menús activos.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Deuda pendiente</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ outstanding|money }}</div>
+      </div></div>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Cliente</div>
+        <div style="font-weight: 700;">{{ customer.full_name }}</div>
+        {% if customer.email %}<div class="muted">{{ customer.email }}</div>{% endif %}
+      </div></div>
+    </div>
+
+    <div class="col-12">
+      <div class="card"><div class="card-body">
+        <div class="h2">Mis pedidos</div>
+        {% if orders %}
+          <div class="table-scroll" style="margin-top: 12px;">
+            <table class="table" style="min-width: 700px;">
+              <thead>
+                <tr class="muted">
+                  <th>Fecha</th>
+                  <th>Plato</th>
+                  <th>Total</th>
+                  <th>Método</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for o in orders %}
+                  <tr>
+                    <td>
+                      {{ o.created_at|date:"Y-m-d H:i" }}
+                    </td>
+                    <td style="font-weight:700;">
+                      {% with items=o.items.all %}
+                        {% if items %}
+                          {{ items.0.item_name }}
+                          {% if items|length > 1 %}
+                            <span class="muted">(+{{ items|length|add:"-1" }})</span>
+                          {% endif %}
+                        {% else %}
+                          —
+                        {% endif %}
+                      {% endwith %}
+                    </td>
+                    <td>
+                      {{ o.total|money }}
+                    </td>
+                    <td>
+                      {{ o.get_payment_method_display }}
+                    </td>
+                    <td>
+                      {% if o.credit_debt and o.credit_debt.status == 'SETTLED' %}
+                        <span class="status-badge status-paid">Pagado</span>
+                      {% else %}
+                        <span class="status-badge status-debt">En deuda</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="muted" style="margin-top: 8px;">Aún no tienes pedidos.</div>
+        {% endif %}
+      </div></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      function ensureToastContainer(){
+        let c = document.querySelector('.toast-container');
+        if (!c){
+          c = document.createElement('div');
+          c.className = 'toast-container';
+          c.setAttribute('aria-live','polite');
+          c.setAttribute('aria-atomic','true');
+          document.body.appendChild(c);
+        }
+        return c;
+      }
+      function showToast(text, kind){
+        const c = ensureToastContainer();
+        const t = document.createElement('div');
+        t.className = 'toast toast--' + (kind || 'success');
+        t.setAttribute('role','status');
+        t.textContent = text;
+        c.appendChild(t);
+        const remove = () => { t.classList.add('toast--hide'); setTimeout(()=>t.remove(), 220); };
+        t.addEventListener('click', remove);
+        setTimeout(remove, 2800);
+      }
+      function applyAvailability(el){
+        if (!el || !el.dataset) return;
+        const menuId = el.dataset.menuId;
+        if (!menuId) return;
+        const soldout = el.dataset.soldout === '1';
+        const form = document.querySelector('form[data-menu-id="' + menuId + '"]');
+        if (!form) return;
+        const btn = form.querySelector('button.buy-btn');
+        if (!btn) return;
+        if (soldout){
+          btn.disabled = true;
+          btn.textContent = 'Agotado';
+          window.__soldOutNotified = window.__soldOutNotified || {};
+          if (!window.__soldOutNotified[menuId]){
+            window.__soldOutNotified[menuId] = true;
+            showToast('Este menú se agotó.', 'warning');
+          }
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Comprar';
+        }
+      }
+
+      // Apply on initial load (after first HTMX swap) + on every availability refresh
+      document.body.addEventListener('htmx:afterSwap', function(e){
+        const target = (e.detail && e.detail.target) ? e.detail.target : null;
+        if (target && target.id && target.id.startsWith('availability-')) {
+          applyAvailability(target);
+        }
+      });
+    })();
+  </script>
+{% endblock %}
+

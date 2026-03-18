@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Pedido {{ order.id }} - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12" style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <div>
+        <h1 class="h1">Pedido</h1>
+        <p class="muted">
+          {{ order.created_at|date:"Y-m-d H:i" }} · Estado: {{ order.get_status_display }} · Pago: {{ order.get_payment_method_display }}
+          · Tipo: {% if order.is_full_menu %}Menú completo{% else %}Solo bandeja{% endif %}
+        </p>
+      </div>
+      <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+        <form method="post" action="{% url 'orders:confirm' order.id %}">
+          {% csrf_token %}
+          <button class="btn btn-primary" type="submit">Confirmar</button>
+        </form>
+        <form method="post" action="{% url 'orders:cancel' order.id %}">
+          {% csrf_token %}
+          <button class="btn btn-danger" type="submit">Cancelar</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Cliente</div>
+        {% if order.customer %}
+          <div style="font-weight:700;">{{ order.customer.full_name }}</div>
+          <div class="muted">{{ order.customer.phone }}</div>
+        {% elif order.customer_name %}
+          <div style="font-weight:700;">{{ order.customer_name }}</div>
+          <div class="muted">{{ order.customer_phone }}</div>
+        {% else %}
+          <div class="muted">Sin cliente</div>
+        {% endif %}
+      </div></div>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card"><div class="card-body">
+        <div class="h2">Totales</div>
+        <div>Subtotal: <strong>{{ order.subtotal|money }}</strong></div>
+        <div>Total: <strong>{{ order.total|money }}</strong></div>
+      </div></div>
+    </div>
+
+    {% if order.customer_note %}
+      <div class="col-12">
+        <div class="card"><div class="card-body">
+          <div class="h2">Mensaje del cliente</div>
+          <div>{{ order.customer_note }}</div>
+        </div></div>
+      </div>
+    {% endif %}
+
+    <div class="col-12">
+      <div class="card"><div class="card-body">
+        <div class="h2">Ítems</div>
+        {% if items %}
+          <div class="stack" style="margin-top: 12px;">
+            {% for it in items %}
+              <div style="display:flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div>
+                  <div style="font-weight:700;">{{ it.quantity }} x {{ it.item_name }}</div>
+                  <div class="muted">{{ it.unit_price|money }} · {{ it.line_total|money }}</div>
+                  {% if it.notes %}<div class="muted">{{ it.notes }}</div>{% endif %}
+                </div>
+              </div>
+              {% if not forloop.last %}<hr style="border: none; border-top: 1px solid var(--border); width: 100%;"/>{% endif %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="muted" style="margin-top: 8px;">Sin ítems.</div>
+        {% endif %}
+      </div></div>
+    </div>
+  </div>
+{% endblock %}
+

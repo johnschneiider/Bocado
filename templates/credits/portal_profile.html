@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Completar perfil - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Completar perfil</h1>
+      <p class="muted">Para realizar un pedido necesitas tu nombre y dirección.</p>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card">
+        <div class="card-body">
+          <form method="post" class="stack">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-primary" type="submit">Guardar</button>
+            <a class="btn" href="/cliente/">Volver</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

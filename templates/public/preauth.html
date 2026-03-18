@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Bienvenido - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Bienvenido</h1>
+      <p class="muted">Para continuar, ingresa tu número de teléfono.</p>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card">
+        <div class="card-body">
+          <form method="post" class="stack">
+            {% csrf_token %}
+            <div>
+              <label>Teléfono</label>
+              <input name="phone" placeholder="3117451274" required />
+            </div>
+            <button class="btn btn-primary" type="submit">Continuar</button>
+            <div class="muted">
+              Si el número es el del administrador, entrarás al panel de administración.
+              Si no, verás el menú como cliente.
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

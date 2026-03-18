@@ -1,0 +1,56 @@
+{% load money %}
+<div id="modal-customer-orders" class="modal-backdrop" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <button class="btn" type="button" onclick="document.getElementById('modal-customer-orders').remove();">Cerrar</button>
+      <div class="modal-title">
+        <div style="font-weight:900; font-size: 18px;">{{ customer.full_name }}</div>
+        <div class="muted" style="margin-top:2px;">{{ customer.phone }} · {{ customer.address|default:"—" }}</div>
+      </div>
+      <span class="modal-header__spacer" aria-hidden="true"></span>
+    </div>
+
+    <div class="modal-body">
+      {% if orders %}
+        <div class="table-scroll">
+          <table class="table" style="min-width: 600px;">
+            <thead>
+              <tr class="muted">
+                <th>Fecha</th>
+                <th>Método</th>
+                <th>Precio</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for o in orders %}
+                <tr>
+                  <td>
+                    {{ o.created_at|date:"Y-m-d H:i" }}
+                  </td>
+                  <td>
+                    {{ o.get_payment_method_display }}
+                  </td>
+                  <td style="font-weight:700;">
+                    {{ o.total|money }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="muted">Este cliente aún no tiene pedidos.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+  (function(){
+    const el = document.getElementById('modal-customer-orders');
+    if (!el) return;
+    el.addEventListener('click', function(e){
+      if (e.target === el) el.remove();
+    });
+  })();
+</script>
+

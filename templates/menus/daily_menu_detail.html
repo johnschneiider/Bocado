@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Menú {{ menu.date }} - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <div>
+          <h1 class="h1">{{ menu.title }}</h1>
+          <p class="muted">
+            {{ menu.date }} · {{ menu.created_at|date:"H:i" }}
+            {% if menu.max_orders %} · Cupo: {{ menu.max_orders }}{% endif %}
+            · {% if menu.is_visible %}Visible{% else %}Oculto{% endif %}
+          </p>
+          {% if menu.description %}
+            <p class="muted">{{ menu.description }}</p>
+          {% endif %}
+        </div>
+        <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+          <a class="btn" href="{% url 'menus:edit' menu.id %}">Editar</a>
+          <a class="btn btn-danger" href="{% url 'menus:delete' menu.id %}">Eliminar</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="h2">Vista previa (como lo ve el cliente)</div>
+          <p class="muted" style="margin-top: 6px;">
+            Esta pantalla es solo para verificar el diseño. Para editar, usa el botón <strong>Editar</strong>.
+          </p>
+
+          <details class="accordion" open style="margin-top: 12px;">
+            <summary class="accordion__summary">
+              <div class="product-card">
+                <div class="product-card__media">
+                  {% if menu.image %}
+                    <img class="product-card__img" src="{{ menu.image.url }}" alt="Menú {{ menu.date }}" />
+                  {% else %}
+                    <div style="height:100%; display:flex; align-items:center; justify-content:center;" class="muted">Sin imagen</div>
+                  {% endif %}
+                </div>
+                <div style="display:flex; align-items:flex-start; justify-content: space-between; gap: 12px;">
+                  <div>
+                    <div class="product-card__title">{{ menu.title }}</div>
+                    {% if menu.description %}
+                      <div class="muted" style="margin-top: 4px;">{{ menu.description }}</div>
+                    {% endif %}
+                    <div class="product-card__meta">
+                      <span class="chip">{{ menu.date }} · {{ menu.created_at|date:"H:i" }}</span>
+                      {% if menu.visible_until %}<span class="chip">Activo hasta {{ menu.visible_until|date:"d/m H:i" }}</span>{% endif %}
+                      {% if menu.max_orders %}<span class="chip">Cupo: {{ menu.max_orders }}</span>{% else %}<span class="chip">Sin límite</span>{% endif %}
+                    </div>
+                    <div class="accordion__hint">
+                      <span>Ver opciones y comprar</span>
+                      <span class="chev" aria-hidden="true"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </summary>
+
+            <div class="accordion__content">
+              <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div>
+                  <div style="font-weight:700;">¿Menú completo?</div>
+                  <div class="muted" style="margin-top: 2px;">Incluye sopa.</div>
+                </div>
+                <label class="switch fullmenu-switch" style="margin: 0; opacity: 0.85;" title="Solo vista previa (no interactivo)">
+                  <input type="checkbox" disabled />
+                  <span class="slider"></span>
+                  <span class="fullmenu-text">
+                    <span class="off">Bandeja</span>
+                    <span class="on">Bandeja y Sopa</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="grid" style="margin-top: 12px;">
+                <div class="col-6">
+                  <label>Método de pago</label>
+                  <select disabled>
+                    <option>Contado</option>
+                    <option>Transferencia</option>
+                    <option>Crédito</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label>Referencia transferencia (opcional)</label>
+                  <input disabled placeholder="Ej: 12345" />
+                </div>
+              </div>
+
+              <button class="btn btn-primary" type="button" disabled style="margin-top: 12px; opacity: 0.7;">Comprar</button>
+
+              <div class="muted" style="margin-top: 12px;">
+                Ítems configurados en este menú:
+              </div>
+              {% if menu_items %}
+                <div class="stack" style="margin-top: 10px;">
+                  {% for mi in menu_items %}
+                    <div class="card" style="border-radius: 12px; box-shadow: none;">
+                      <div class="card-body" style="display:flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                        <div>
+                          <div style="font-weight:700;">{{ mi.item.name }}</div>
+                          <div class="muted">{{ mi.price|money }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="muted" style="margin-top: 8px;">Aún no hay ítems en este menú.</div>
+              {% endif %}
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}Pedidos - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Pedidos</h1>
+      <p class="muted">Pedidos por fecha.</p>
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="date-nav">
+            <a class="date-nav__btn" href="?date={{ prev_date|date:'Y-m-d' }}" aria-label="Día anterior">‹</a>
+
+            <div class="date-nav__center">
+              <div class="date-nav__day">{{ selected_date|date:"j" }}</div>
+              <div class="date-nav__meta">
+                <div style="font-weight:700;">{{ selected_date|date:"l"|capfirst }}</div>
+                <div class="muted">{{ selected_date|date:"F \\d\\e Y"|capfirst }}</div>
+              </div>
+            </div>
+
+            <a class="date-nav__btn" href="?date={{ next_date|date:'Y-m-d' }}" aria-label="Día siguiente">›</a>
+            <a class="btn btn-primary" href="?date={{ today|date:'Y-m-d' }}">Hoy</a>
+          </div>
+
+          <div class="card" style="box-shadow: none; border-radius: 18px; border: 1px solid var(--border); background: var(--surface-2); margin-bottom: 14px;">
+            <div class="card-body" style="display:flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+              <div>
+                <div class="muted" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;">Resumen del día</div>
+                <div style="font-size: 20px; font-weight: 900; margin-top: 2px;">{{ selected_date|date:"Y-m-d" }}</div>
+              </div>
+              <div style="display:flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                <div class="chip" title="Pedidos del día (sin cancelados)">
+                  <strong>Bandejas:</strong>&nbsp;{{ kpi_total_bandejas }}
+                </div>
+                <div class="chip chip--urgent" title="Pedidos con sopa (menú completo)">
+                  <strong>Bandeja y sopa:</strong>&nbsp;{{ kpi_bandeja_con_sopa }}
+                </div>
+                <div class="chip" title="Pedidos solo bandeja">
+                  <strong>Solo bandeja:</strong>&nbsp;{{ kpi_solo_bandeja }}
+                </div>
+                <div class="chip" title="Total vendido del día (sin cancelados)">
+                  <strong>Total:</strong>&nbsp;{{ kpi_total_money|money }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% if orders %}
+            <div class="table-scroll">
+              <table class="table" style="min-width: 900px;">
+                <thead>
+                  <tr class="muted">
+                    <th>Nombre</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Fecha</th>
+                    <th>Plato</th>
+                    <th>Precio</th>
+                    <th>Método de pago</th>
+                    <th>Entregado</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for o in orders %}
+                    <tr>
+                      <td style="font-weight:700;">
+                        {% if o.customer %}{{ o.customer.full_name }}{% else %}{{ o.customer_name|default:"—" }}{% endif %}
+                      </td>
+                      <td>
+                        {{ o.customer_address|default:"—" }}
+                      </td>
+                      <td>
+                        {% if o.customer %}{{ o.customer.phone|default:o.customer_phone }}{% else %}{{ o.customer_phone|default:"—" }}{% endif %}
+                      </td>
+                      <td>
+                        {{ o.created_at|date:"Y-m-d H:i" }}
+                      </td>
+                      <td>
+                        {% with items=o.items.all %}
+                          {% if items %}
+                            {{ items.0.item_name }}
+                            {% if items|length > 1 %}
+                              <span class="muted">(+{{ items|length|add:"-1" }})</span>
+                            {% endif %}
+                            {% if o.is_full_menu %}
+                              <span class="chip" style="margin-left:6px;">Menú completo</span>
+                            {% else %}
+                              <span class="chip" style="margin-left:6px;">Solo bandeja</span>
+                            {% endif %}
+                          {% else %}
+                            —
+                          {% endif %}
+                        {% endwith %}
+                      </td>
+                      <td>
+                        {{ o.total|money }}
+                      </td>
+                      <td>
+                        {{ o.get_payment_method_display }}
+                      </td>
+                      <td>
+                        {% include "orders/_delivered_toggle.html" with o=o %}
+                      </td>
+                      <td>
+                        <div class="order-actions">
+                          {% if o.customer_note %}
+                            <span class="comment-indicator" title="Este pedido tiene un mensaje del cliente" aria-label="Este pedido tiene un mensaje del cliente">
+                              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                                <path fill="currentColor" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 5a1 1 0 0 0 0 2h12a1 1 0 0 0 0-2H6zm0 4a1 1 0 0 0 0 2h9a1 1 0 0 0 0-2H6z"/>
+                              </svg>
+                            </span>
+                          {% endif %}
+                          <a class="btn" href="{% url 'orders:detail' o.id %}">Ver</a>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="muted">No hay pedidos para esta fecha.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

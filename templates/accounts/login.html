@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Ingresar - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Ingresar</h1>
+      <p class="muted">Acceso para administradores del restaurante y administrador SaaS.</p>
+    </div>
+    <div class="col-12 col-6">
+      <div class="card">
+        <div class="card-body stack">
+          <form method="post">
+            {% csrf_token %}
+            <div class="stack">
+              <div>
+                <label for="id_username">Usuario</label>
+                {{ form.username }}
+              </div>
+              <div>
+                <label for="id_password">Contraseña</label>
+                {{ form.password }}
+              </div>
+              <button class="btn btn-primary" type="submit">Entrar</button>
+            </div>
+          </form>
+          {% if form.errors %}
+            <div class="muted">Revisa tus credenciales e inténtalo de nuevo.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

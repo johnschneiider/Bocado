@@ -1,0 +1,44 @@
+{% load money %}
+<tr id="customer-{{ c.id }}">
+  <td style="padding:10px; border-bottom: 1px solid var(--border); font-weight:700;">
+    {{ c.full_name }}
+  </td>
+  <td style="padding:10px; border-bottom: 1px solid var(--border);">
+    <div class="muted">{{ c.phone|default:"—" }}</div>
+    {% if c.address %}<div class="muted" style="font-size:12px;">{{ c.address }}</div>{% endif %}
+  </td>
+  <td style="padding:10px; border-bottom: 1px solid var(--border);">
+    {% if c.outstanding %}
+      <span class="chip chip--urgent">{{ c.outstanding|money }}</span>
+    {% else %}
+      <span class="chip">0</span>
+    {% endif %}
+  </td>
+  <td style="padding:10px; border-bottom: 1px solid var(--border);">
+    <span style="display:inline-flex; align-items:center; gap: 8px;">
+      <span class="muted" style="font-size:12px;">Pagó</span>
+      <form
+        method="post"
+        action="{% url 'credits:customers_mark_paid' c.id %}"
+        hx-post="{% url 'credits:customers_mark_paid' c.id %}"
+        hx-target="#customer-{{ c.id }}"
+        hx-swap="outerHTML"
+        style="margin:0;"
+      >
+        {% csrf_token %}
+        <label class="switch" title="Marcar como pagado" style="margin:0; {% if not c.outstanding %}opacity:0.65;{% endif %}">
+          {% if not c.outstanding %}
+            <input type="checkbox" checked disabled />
+          {% else %}
+            <input type="checkbox" onchange="this.form.requestSubmit();" />
+          {% endif %}
+          <span class="slider"></span>
+        </label>
+      </form>
+    </span>
+  </td>
+  <td style="padding:10px; border-bottom: 1px solid var(--border);">
+    <a class="btn" href="{% url 'credits:customers_detail' c.id %}">Ver</a>
+  </td>
+</tr>
+

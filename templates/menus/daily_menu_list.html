@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Menús - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12" style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <div>
+        <h1 class="h1">Menús</h1>
+        <p class="muted">Menús por fecha (cupo opcional).</p>
+      </div>
+      <a class="btn btn-primary" href="{% url 'menus:new' %}">Nuevo menú</a>
+    </div>
+
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          {% if menus %}
+            <div class="stack">
+              {% for m in menus %}
+                {% include "menus/_daily_menu_row.html" with m=m %}
+                {% if not forloop.last %}<hr style="border: none; border-top: 1px solid var(--border); width: 100%;"/>{% endif %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="muted">Aún no tienes menús.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

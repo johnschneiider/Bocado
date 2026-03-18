@@ -1,0 +1,52 @@
+<div id="menu-{{ m.id }}" style="display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+  <div>
+    <div style="font-weight:700;">{{ m.title }}</div>
+    <div class="muted">
+      {{ m.date }} · {{ m.created_at|date:"H:i" }}
+      {% if m.max_orders %} · Cupo: {{ m.max_orders }}{% endif %}
+      {% if m.visible_until %}
+        {% if m.visible_until > now %}
+          · Visible (hasta {{ m.visible_until|date:"d/m H:i" }})
+        {% else %}
+          · Vencido
+        {% endif %}
+      {% else %}
+        · {% if m.is_visible %}Visible{% else %}Oculto{% endif %}
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="display:flex; align-items:center; gap: 12px; flex-wrap: wrap;">
+    <a class="btn" href="{% url 'menus:detail' m.id %}">Ver</a>
+    <a class="btn" href="{% url 'menus:edit' m.id %}">Editar</a>
+    <a class="btn btn-danger" href="{% url 'menus:delete' m.id %}">Eliminar</a>
+
+    <form
+      method="post"
+      action="{% url 'menus:toggle_visibility' m.id %}"
+      hx-post="{% url 'menus:toggle_visibility' m.id %}"
+      hx-swap="outerHTML"
+      hx-target="#menu-{{ m.id }}"
+      style="margin:0;"
+    >
+      {% csrf_token %}
+      <label class="switch" title="Mostrar u ocultar este menú" style="margin:0;">
+        {% if m.is_visible %}
+          {% if m.visible_until %}
+            {% if m.visible_until > now %}
+              <input type="checkbox" name="enabled" value="1" checked onchange="this.form.requestSubmit();" />
+            {% else %}
+              <input type="checkbox" name="enabled" value="1" onchange="this.form.requestSubmit();" />
+            {% endif %}
+          {% else %}
+            <input type="checkbox" name="enabled" value="1" checked onchange="this.form.requestSubmit();" />
+          {% endif %}
+        {% else %}
+          <input type="checkbox" name="enabled" value="1" onchange="this.form.requestSubmit();" />
+        {% endif %}
+        <span class="slider"></span>
+      </label>
+    </form>
+  </div>
+</div>
+

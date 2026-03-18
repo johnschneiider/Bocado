@@ -1,0 +1,24 @@
+<span id="delivered-{{ o.id }}" style="display:inline-flex; align-items:center; gap: 8px;">
+  <span class="muted" style="font-size: 12px;">Entregado</span>
+  <form
+    method="post"
+    action="{% url 'orders:toggle_delivered' o.id %}"
+    hx-post="{% url 'orders:toggle_delivered' o.id %}"
+    hx-target="#delivered-{{ o.id }}"
+    hx-swap="outerHTML"
+    style="margin:0;"
+  >
+    {% csrf_token %}
+    <label class="switch" title="Marcar como entregado" style="margin:0; {% if o.status == 'CANCELLED' %}opacity:0.55;{% endif %}">
+      {% if o.status == 'CANCELLED' %}
+        <input type="checkbox" name="delivered" value="1" disabled />
+      {% elif o.status == 'DELIVERED' %}
+        <input type="checkbox" name="delivered" value="1" checked onchange="this.form.requestSubmit();" />
+      {% else %}
+        <input type="checkbox" name="delivered" value="1" onchange="this.form.requestSubmit();" />
+      {% endif %}
+      <span class="slider"></span>
+    </label>
+  </form>
+</span>
+

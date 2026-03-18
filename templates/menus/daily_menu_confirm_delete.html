@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar menú - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Eliminar menú</h1>
+      <p class="muted">
+        Vas a eliminar: <strong>{{ object.title }}</strong> · {{ object.date }}
+      </p>
+    </div>
+
+    <div class="col-12 col-6">
+      <div class="card">
+        <div class="card-body">
+          <p class="muted">
+            Esta acción no se puede deshacer. Si el menú ya tiene pedidos, no se podrá eliminar.
+          </p>
+          <form method="post" class="stack" style="margin-top: 12px;">
+            {% csrf_token %}
+            <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-danger" type="submit">Sí, eliminar</button>
+              <a class="btn" href="{% url 'menus:detail' object.id %}">Cancelar</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

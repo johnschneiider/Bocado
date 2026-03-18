@@ -1,0 +1,18 @@
+<span
+  id="availability-{{ menu.id }}"
+  class="chip {% if is_sold_out %}chip--danger{% elif is_low %}chip--urgent{% endif %}"
+  data-menu-id="{{ menu.id }}"
+  data-soldout="{% if is_sold_out %}1{% else %}0{% endif %}"
+  data-remaining="{% if remaining is not None %}{{ remaining }}{% else %}{% endif %}"
+>
+  {% if menu.max_orders %}
+    {% if is_sold_out %}
+      Agotado
+    {% else %}
+      Quedan {{ remaining }}
+    {% endif %}
+  {% else %}
+    Sin límite
+  {% endif %}
+</span>
+

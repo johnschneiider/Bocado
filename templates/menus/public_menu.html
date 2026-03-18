@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load money %}
+
+{% block title %}{{ restaurant.name }} · Menú {{ menu.date }} - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">{{ restaurant.name }}</h1>
+      <p class="muted">{{ menu.title }} · {{ menu.date }}{% if menu.max_orders %} · Cupo: {{ menu.max_orders }}{% endif %}</p>
+      {% if menu.description %}
+        <p class="muted">{{ menu.description }}</p>
+      {% endif %}
+    </div>
+
+    <div class="col-12 col-8">
+      <div class="card">
+        <div class="card-body">
+          <div class="h2">Selecciona tus ítems</div>
+          <form method="post" action="{% url 'public_menus:order' restaurant.id menu.date|date:'Y-m-d' %}" class="stack" style="margin-top: 12px;">
+            {% csrf_token %}
+
+            <div class="grid">
+              <div class="col-6">
+                <label>Nombre</label>
+                <input name="customer_name" placeholder="Tu nombre" />
+              </div>
+              <div class="col-6">
+                <label>Teléfono</label>
+                <input name="customer_phone" placeholder="+57..." />
+              </div>
+              <div class="col-12">
+                <label>Dirección</label>
+                <input name="customer_address" placeholder="Dirección de entrega" />
+              </div>
+              <div class="col-6">
+                <label>Método de pago</label>
+                <select name="payment_method">
+                  <option value="CASH">Contado</option>
+                  <option value="TRANSFER">Transferencia</option>
+                  <option value="CREDIT">Crédito</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label>Referencia transferencia (opcional)</label>
+                <input name="transfer_reference" placeholder="Ej: 12345" />
+              </div>
+            </div>
+
+            <div class="stack" style="margin-top: 10px;">
+              {% for mi in items %}
+                <div class="card" style="border-radius: 12px;">
+                  <div class="card-body" style="display:flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                    <div>
+                      <div style="font-weight:700;">{{ mi.item.name }}</div>
+                      <div class="muted">{{ mi.price|money }}</div>
+                    </div>
+                    <div style="width: 120px;">
+                      <label>Cantidad</label>
+                      <input type="number" min="0" name="qty_{{ mi.id }}" value="0" />
+                    </div>
+                  </div>
+                </div>
+              {% empty %}
+                <div class="muted">No hay ítems disponibles.</div>
+              {% endfor %}
+            </div>
+
+            <button class="btn btn-primary" type="submit">Enviar pedido</button>
+            <div class="muted">Nota: para crédito se usará el nombre/teléfono para asociar la deuda.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-4">
+      <div class="card"><div class="card-body">
+        <div class="h2">¿Eres administrador?</div>
+        <p class="muted">Ingresa para administrar menús, pedidos y crédito.</p>
+        <a class="btn" href="{% url 'accounts:login' %}">Ingresar</a>
+      </div></div>
+    </div>
+  </div>
+{% endblock %}
+

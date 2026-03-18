@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Verificar - Aladdin{% endblock %}
+
+{% block content %}
+  <div class="grid">
+    <div class="col-12">
+      <h1 class="h1">Verificar</h1>
+      <p class="muted">Ingresa el código enviado a tu teléfono.</p>
+    </div>
+    <div class="col-12 col-6">
+      <div class="card">
+        <div class="card-body stack">
+          <form method="post" class="stack">
+            {% csrf_token %}
+            <input type="hidden" name="phone" value="{{ phone }}" />
+            <div>
+              <label>Teléfono</label>
+              <input value="{{ phone }}" disabled />
+            </div>
+            <div>
+              <label>Código</label>
+              <input name="code" inputmode="numeric" placeholder="123456" required />
+            </div>
+            <button class="btn btn-primary" type="submit">Ingresar</button>
+            <a class="btn" href="{% url 'accounts:login' %}">Volver</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
