@@ -4,6 +4,54 @@
 
 {% block title %}Entrega de comida en {{ city }} - Bocado{% endblock %}
 
+{% block scripts %}
+<!-- JavaScript para arrastrar el carrusel -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const carousel = document.getElementById('categoriesCarousel');
+    if (!carousel) return;
+    
+    // Arrastrar con el ratón
+    let isDragging = false;
+    let startX;
+    let scrollLeft;
+    
+    carousel.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      carousel.style.cursor = 'grabbing';
+      carousel.style.animationPlayState = 'paused';
+    });
+    
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      carousel.style.cursor = 'grab';
+      carousel.style.animationPlayState = 'running';
+    });
+    
+    carousel.addEventListener('mouseleave', () => {
+      isDragging = false;
+      carousel.style.cursor = 'grab';
+      carousel.style.animationPlayState = 'running';
+    });
+    
+    carousel.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      carousel.scrollLeft -= e.movementX;
+    });
+    
+    // Touch para móvil
+    carousel.addEventListener('touchstart', (e) => {
+      carousel.style.animationPlayState = 'paused';
+    });
+    
+    carousel.addEventListener('touchend', () => {
+      carousel.style.animationPlayState = 'running';
+    });
+  });
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="home-page">
   <!-- ==================== HERO SECTION ==================== -->
@@ -119,7 +167,7 @@
   </section>
 
   <!-- ==================== CATEGORÍAS SECTION ==================== -->
-  <section class="categories-section" style="padding: 40px 0; background: var(--surface-2); overflow: hidden;">
+  <section class="categories-section" style="padding: 40px 0; background: var(--surface-2); position: relative; z-index: 1;">
     <div class="container" style="max-width: 1100px;">
       <div style="text-align: center; margin-bottom: 24px;">
         <h2 style="font-size: 24px; margin: 0 0 8px;">
@@ -130,88 +178,54 @@
         </p>
       </div>
       
-      <!-- Carrusel automático de categorías -->
-      <div class="categories-carousel-wrapper" style="position: relative;">
+      <!-- Carrusel automático de categorías (infinito) -->
+      <div class="categories-carousel-wrapper" style="position: relative; overflow: hidden;">
         <div class="categories-carousel" id="categoriesCarousel" style="
           display: flex;
           gap: 20px;
-          overflow: hidden;
+          overflow: visible;
           padding: 16px 0;
           white-space: nowrap;
+          cursor: grab;
         ">
-          <!-- Duplicamos las categorías para crear efecto infinito -->
-          {% for category in categories %}
-            <a href="{% url 'category_detail' category.slug %}" class="category-card" style="
-              flex: 0 0 auto;
-              width: 130px;
-              text-decoration: none;
-              color: var(--text);
-              display: inline-block;
-            ">
-              <div style="
-                background: white;
-                border-radius: 16px;
-                padding: 20px;
-                text-align: center;
-                box-shadow: var(--shadow);
-                transition: transform 0.3s, box-shadow 0.3s;
-                white-space: normal;
-              " onmouseover="this.style.transform='translateY(-6px) scale(1.05)'; this.style.boxShadow='var(--shadow-lg)';"
-                 onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='var(--shadow)';">
-                <div style="font-size: 32px; margin-bottom: 10px;">
-                  {% if category.icon == 'fa-bowl-rice' %}🍜
-                  {% elif category.icon == 'fa-drumstick-bite' %}🍗
-                  {% elif category.icon == 'fa-bread-slice' %}🍞
-                  {% elif category.icon == 'fa-pizza-slice' %}🍕
-                  {% elif category.icon == 'fa-mug-hot' %}☕
-                  {% elif category.icon == 'fa-leaf' %}🥗
-                  {% elif category.icon == 'fa-burger' %}🍔
-                  {% elif category.icon == 'fa-earth-americas' %}🌎
-                  {% elif category.icon == 'fa-pepper-hot' %}🌶️
-                  {% elif category.icon == 'fa-flag' %}🇨🇴
-                  {% else %}🍽️
-                  {% endif %}
+          <!-- Generamos duplicados para efecto infinito -->
+          {% for i in "1234567890"|make_list %}
+            {% for category in categories %}
+              <a href="{% url 'category_detail' category.slug %}" class="category-card" style="
+                flex: 0 0 auto;
+                width: 130px;
+                text-decoration: none;
+                color: var(--text);
+                display: inline-block;
+              ">
+                <div style="
+                  background: white;
+                  border-radius: 16px;
+                  padding: 20px;
+                  text-align: center;
+                  box-shadow: var(--shadow);
+                  transition: transform 0.3s, box-shadow 0.3s;
+                  white-space: normal;
+                " onmouseover="this.style.transform='translateY(-6px) scale(1.05)'; this.style.boxShadow='var(--shadow-lg)';"
+                   onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='var(--shadow)';">
+                  <div style="font-size: 32px; margin-bottom: 10px;">
+                    {% if category.icon == 'fa-bowl-rice' %}🍜
+                    {% elif category.icon == 'fa-drumstick-bite' %}🍗
+                    {% elif category.icon == 'fa-bread-slice' %}🍞
+                    {% elif category.icon == 'fa-pizza-slice' %}🍕
+                    {% elif category.icon == 'fa-mug-hot' %}☕
+                    {% elif category.icon == 'fa-leaf' %}🥗
+                    {% elif category.icon == 'fa-burger' %}🍔
+                    {% elif category.icon == 'fa-earth-americas' %}🌎
+                    {% elif category.icon == 'fa-pepper-hot' %}🌶️
+                    {% elif category.icon == 'fa-flag' %}🇨🇴
+                    {% else %}🍽️
+                    {% endif %}
+                  </div>
+                  <div style="font-size: 14px; font-weight: 600;">{{ category.name }}</div>
                 </div>
-                <div style="font-size: 14px; font-weight: 600;">{{ category.name }}</div>
-              </div>
-            </a>
-          {% endfor %}
-          <!-- Segunda copia para efecto infinito -->
-          {% for category in categories %}
-            <a href="{% url 'category_detail' category.slug %}" class="category-card" style="
-              flex: 0 0 auto;
-              width: 130px;
-              text-decoration: none;
-              color: var(--text);
-              display: inline-block;
-            ">
-              <div style="
-                background: white;
-                border-radius: 16px;
-                padding: 20px;
-                text-align: center;
-                box-shadow: var(--shadow);
-                transition: transform 0.3s, box-shadow 0.3s;
-                white-space: normal;
-              " onmouseover="this.style.transform='translateY(-6px) scale(1.05)'; this.style.boxShadow='var(--shadow-lg)';"
-                 onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='var(--shadow)';">
-                <div style="font-size: 32px; margin-bottom: 10px;">
-                  {% if category.icon == 'fa-bowl-rice' %}🍜
-                  {% elif category.icon == 'fa-drumstick-bite' %}🍗
-                  {% elif category.icon == 'fa-bread-slice' %}🍞
-                  {% elif category.icon == 'fa-pizza-slice' %}🍕
-                  {% elif category.icon == 'fa-mug-hot' %}☕
-                  {% elif category.icon == 'fa-leaf' %}🥗
-                  {% elif category.icon == 'fa-burger' %}🍔
-                  {% elif category.icon == 'fa-earth-americas' %}🌎
-                  {% elif category.icon == 'fa-pepper-hot' %}🌶️
-                  {% elif category.icon == 'fa-flag' %}🇨🇴
-                  {% else %}🍽️
-                  {% endif %}
-                </div>
-                <div style="font-size: 14px; font-weight: 600;">{{ category.name }}</div>
-              </div>
-            </a>
+              </a>
+            {% endfor %}
           {% endfor %}
         </div>
       </div>

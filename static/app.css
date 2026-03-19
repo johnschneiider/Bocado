@@ -941,16 +941,22 @@ details[open] .chev {
 }
 
 /* Carrusel de categorías */
-.categories-carousel::-webkit-scrollbar {
-  height: 6px;
+.categories-carousel-wrapper {
+  overflow: hidden !important;
 }
-.categories-carousel::-webkit-scrollbar-track {
-  background: var(--surface-2);
-  border-radius: 3px;
+.categories-carousel {
+  animation: scroll-left 30s linear infinite;
 }
-.categories-carousel::-webkit-scrollbar-thumb {
-  background: var(--brand-2);
-  border-radius: 3px;
+.categories-carousel:hover {
+  animation-play-state: paused;
+}
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 /* Cards de restaurante */
