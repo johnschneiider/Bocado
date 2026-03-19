@@ -7,6 +7,7 @@ from common.models import TimeStampedUUIDModel
 class UserRole(models.TextChoices):
     SAAS_ADMIN = "SAAS_ADMIN", "Administrador SaaS"
     RESTAURANT_ADMIN = "RESTAURANT_ADMIN", "Administrador del restaurante"
+    CUSTOMER = "CUSTOMER", "Cliente"
 
 
 class UserProfile(TimeStampedUUIDModel):
