@@ -3,6 +3,22 @@ from django.db import models
 from common.models import TimeStampedUUIDModel
 
 
+class Category(models.Model):
+    """
+    Categorías de comida para el catálogo de restaurantes.
+    """
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
+    icon = models.CharField(max_length=50, blank=True)  # Font Awesome icon name
+    order = models.IntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order', 'name']
+    
+    def __str__(self) -> str:
+        return self.name
+
+
 class RestaurantStatus(models.TextChoices):
     ACTIVE = "ACTIVE", "Activo"
     SUSPENDED = "SUSPENDED", "Suspendido"
@@ -17,6 +33,16 @@ class Restaurant(TimeStampedUUIDModel):
     status = models.CharField(
         max_length=16, choices=RestaurantStatus.choices, default=RestaurantStatus.ACTIVE
     )
+    category = models.ForeignKey(
+        Category, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name="restaurants"
+    )
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=4.5)
+    image_url = models.URLField(max_length=500, blank=True)
+    is_featured = models.BooleanField(default=False, help_text="Mostrar en sección destacada")
 
     def __str__(self) -> str:
         return self.name

@@ -25,6 +25,7 @@ from public_views import (
     PublicRestaurantOrderView,
     CustomerLoginView,
     CustomerVerifyView,
+    CategoryListView,
 )
 
 urlpatterns = [
@@ -36,6 +37,10 @@ urlpatterns = [
     # Vistas de login cliente
     path("login/", CustomerLoginView.as_view(), name="customer_login"),
     path("verify/", CustomerVerifyView.as_view(), name="customer_verify"),
+    
+    # Vistas de categorías
+    path("categorias/<slug:category_slug>/", CategoryListView.as_view(), name="category_detail"),
+    
     path("cliente/logout/", include("credits.portal_urls")),
     
     # Vistas de negocio (admin)

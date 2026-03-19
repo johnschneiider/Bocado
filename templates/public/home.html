@@ -1,95 +1,338 @@
 {% extends "base.html" %}
+{% load static %}
 {% load money %}
 
-{% block title %}Bocado - Encuentra tu comida favorita{% endblock %}
+{% block title %}Entrega de comida en {{ city }} - Bocado{% endblock %}
 
 {% block content %}
-  <div class="menu-publico">
-    <!-- Header principal estilo Didifood -->
-    <div class="header-gradient" style="padding: 40px 0;">
-      <div class="container" style="max-width: 1100px;">
-        <div style="text-align: center; max-width: 600px; margin: 0 auto;">
-          <h1 style="font-size: 32px; margin: 0 0 12px;">
-            🍽️ Bocado
+<div class="home-page">
+  <!-- ==================== HERO SECTION ==================== -->
+  <section class="hero-section" style="
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 60px 0 100px;
+  ">
+    <!-- Curva decorativa -->
+    <div style="
+      position: absolute;
+      bottom: -50px;
+      right: -100px;
+      width: 400px;
+      height: 400px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    "></div>
+    
+    <div class="container" style="max-width: 1100px;">
+      <div class="grid">
+        <div class="col-12 col-6" style="color: white;">
+          <h1 style="
+            font-size: 42px;
+            font-weight: 800;
+            margin: 0 0 16px;
+            line-height: 1.2;
+          ">
+            Entrega de comida en {{ city }}
           </h1>
-          <p style="font-size: 18px; margin: 0 0 24px; opacity: 0.95;">
-            Encuentra los mejores restaurantes y haz tu pedido en pocos clics
+          <p style="
+            font-size: 18px;
+            opacity: 0.95;
+            margin: 0 0 24px;
+            line-height: 1.6;
+          ">
+            Los mejores restaurantes en {{ city }} con Comida a Domicilio y para llevar. 
+            Aprovecha las ofertas y descuentos.
           </p>
           
-          <!-- Buscador de restaurantes -->
-          <form method="get" action="{% url 'home' %}" style="display: flex; gap: 10px; max-width: 400px; margin: 0 auto;">
-            <input type="text" name="search" placeholder="Buscar restaurante..." style="flex: 1;" />
-            <button class="btn btn-accent" type="submit">
-              🔍 Buscar
-            </button>
-          </form>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            {% if is_customer_logged_in %}
+              <a href="{% url 'home' %}" class="btn btn-accent" style="
+                background: white;
+                color: var(--brand);
+                font-size: 16px;
+                padding: 14px 28px;
+              ">
+                🛒 Ordena Ahora
+              </a>
+            {% else %}
+              <a href="{% url 'customer_login' %}" class="btn" style="
+                background: white;
+                color: var(--brand);
+                font-size: 16px;
+                padding: 14px 28px;
+              ">
+                📱 Iniciar sesión
+              </a>
+              <a href="{% url 'home' %}" class="btn" style="
+                background: rgba(255,255,255,0.2);
+                color: white;
+                font-size: 16px;
+                padding: 14px 28px;
+              ">
+                Ver restaurantes
+              </a>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="col-12 col-6" style="display: flex; align-items: center; justify-content: center;">
+          <div style="
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+          ">
+            🍽️
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Sección de restaurantes -->
+  <!-- ==================== CATEGORÍAS SECTION ==================== -->
+  <section class="categories-section" style="padding: 40px 0; background: var(--surface-2);">
     <div class="container" style="max-width: 1100px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-        <h2 style="margin: 0; font-size: 22px; display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 24px;">🏪</span>
-          Restaurantes disponibles
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="font-size: 24px; margin: 0 0 8px;">
+          🍴 Categorías de comida en {{ city }}
         </h2>
-        <span class="muted">{{ restaurants|length }} restaurantes</span>
+        <p class="muted" style="margin: 0;">
+          Explora los mejores restaurantes por tipo de comida
+        </p>
       </div>
+      
+      <!-- Carrusel de categorías -->
+      <div class="categories-carousel" style="
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding: 16px 0;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
+      ">
+        {% for category in categories %}
+          <a href="{% url 'category_detail' category.slug %}" class="category-card" style="
+            flex: 0 0 auto;
+            width: 120px;
+            scroll-snap-align: start;
+            text-decoration: none;
+            color: var(--text);
+          ">
+            <div style="
+              background: white;
+              border-radius: 12px;
+              padding: 16px;
+              text-align: center;
+              box-shadow: var(--shadow);
+              transition: transform 0.2s, box-shadow 0.2s;
+            " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow)';">
+              <div style="font-size: 28px; margin-bottom: 8px;">
+                {% if category.icon == 'fa-bowl-rice' %}🍜
+                {% elif category.icon == 'fa-drumstick-bite' %}🍗
+                {% elif category.icon == 'fa-bread-slice' %}🍞
+                {% elif category.icon == 'fa-pizza-slice' %}🍕
+                {% elif category.icon == 'fa-mug-hot' %}☕
+                {% elif category.icon == 'fa-leaf' %}🥗
+                {% elif category.icon == 'fa-burger' %}🍔
+                {% elif category.icon == 'fa-earth-americas' %}🌎
+                {% elif category.icon == 'fa-pepper-hot' %}🌶️
+                {% elif category.icon == 'fa-flag' %}🇨🇴
+                {% else %}🍽️
+                {% endif %}
+              </div>
+              <div style="font-size: 13px; font-weight: 600;">{{ category.name }}</div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
 
-      <!-- Grid de restaurantes -->
+  <!-- ==================== RESTAURANTES DESTACADOS ==================== -->
+  <section class="featured-section" style="padding: 50px 0;">
+    <div class="container" style="max-width: 1100px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px;">
+        <div>
+          <h2 style="font-size: 24px; margin: 0 0 4px;">
+            ⭐ Los mejores restaurantes en {{ city }}
+          </h2>
+          <p class="muted" style="margin: 0; font-size: 14px;">
+            Elige la mejor comida
+          </p>
+        </div>
+        <a href="#all-restaurants" class="muted" style="font-size: 14px;">
+          Ver todos →
+        </a>
+      </div>
+      
+      <!-- Grid de restaurantes destacados (4 columnas) -->
       <div class="grid">
-        {% for restaurant in restaurants %}
+        {% for restaurant in featured_restaurants %}
           <div class="col-6 col-4">
-            <div class="card restaurant-card" style="cursor: pointer;" onclick="window.location='{% url 'public_restaurant_detail' restaurant.id %}'">
-              <div class="card-body" style="padding: 0;">
-                <!-- Imagen del restaurante (placeholder) -->
-                <div class="restaurant-image" style="height: 120px; background: linear-gradient(135deg, var(--brand-2), var(--brand)); display: flex; align-items: center; justify-content: center;">
-                  <span style="font-size: 48px; color: white;">🍽️</span>
-                </div>
-                
-                <!-- Info del restaurante -->
-                <div style="padding: 16px;">
-                  <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                      <h3 class="restaurant-name" style="margin: 0 0 6px; font-size: 16px; font-weight: 700;">
-                        {{ restaurant.name }}
-                      </h3>
-                      <p class="muted" style="margin: 0; font-size: 13px;">
-                        {{ restaurant.address|default:"Sin dirección" }}
-                      </p>
-                    </div>
-                    <span class="chip" style="background: rgba(46, 125, 50, 0.1); color: var(--brand);">
-                      📍 {{ restaurant.locations.count|default:1 }}
-                    </span>
-                  </div>
-                  
-                  <!-- Stats -->
-                  <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--muted);">
-                    <span>🍽️ Menús activos</span>
-                    <span>⭐ 4.5</span>
-                  </div>
-                </div>
-                
-                <!-- Botón de acción -->
-                <div style="padding: 0 16px 16px;">
-                  <a href="{% url 'public_restaurant_detail' restaurant.id %}" class="btn btn-primary" style="width: 100%;">
-                    Ver menú →
-                  </a>
+            <div class="restaurant-card featured" style="
+              background: white;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: var(--shadow);
+              cursor: pointer;
+              transition: transform 0.2s, box-shadow 0.2s;
+            " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow)';"
+               onclick="window.location='{% url 'public_restaurant_detail' restaurant.id %}'">
+              
+              <!-- Imagen del restaurante -->
+              <div style="
+                height: 120px;
+                background: linear-gradient(135deg, var(--brand-2), var(--brand));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+              ">
+                <span style="font-size: 42px;">🍽️</span>
+                {% if restaurant.rating >= 4.5 %}
+                  <span style="
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: var(--brand);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    font-weight: 700;
+                  ">
+                    ⭐ {{ restaurant.rating }}
+                  </span>
+                {% endif %}
+              </div>
+              
+              <!-- Info del restaurante -->
+              <div style="padding: 12px;">
+                <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 4px;">
+                  {{ restaurant.name }}
+                </h3>
+                <p style="font-size: 12px; color: var(--muted); margin: 0 0 8px;">
+                  {% if restaurant.locations.first %}
+                    {{ restaurant.locations.first.address_line1|truncatechars:30 }}
+                  {% else %}
+                    Sin dirección
+                  {% endif %}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span class="chip" style="font-size: 11px; padding: 4px 8px;">
+                    {{ restaurant.category.name|default:'General' }}
+                  </span>
+                  <span style="font-size: 12px; color: var(--brand); font-weight: 600;">
+                    📍 1.2 km
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         {% empty %}
           <div class="col-12">
-            <div class="card" style="text-align: center; padding: 40px;">
-              <span style="font-size: 48px; display: block; margin-bottom: 16px;">😔</span>
-              <h3>No hay restaurantes disponibles</h3>
-              <p class="muted">Vuelve más tarde para ver los menús del día.</p>
-            </div>
+            <p class="muted" style="text-align: center; padding: 40px;">
+              No hay restaurantes destacados en este momento.
+            </p>
           </div>
         {% endfor %}
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ==================== TODOS LOS RESTAURANTES ==================== -->
+  <section class="all-restaurants-section" id="all-restaurants" style="padding: 40px 0; background: var(--surface-2);">
+    <div class="container" style="max-width: 1100px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="font-size: 24px; margin: 0 0 8px;">
+          🏪 Todos los restaurantes
+        </h2>
+        <p class="muted" style="margin: 0;">
+          Encuentra tu comida favorita
+        </p>
+      </div>
+      
+      <!-- Grid responsive de restaurantes (2 columnas móvil, 3 tablet, 4 desktop) -->
+      <div class="grid">
+        {% for restaurant in all_restaurants %}
+          <div class="col-6 col-4">
+            <div class="restaurant-card" style="
+              background: white;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: var(--shadow);
+              cursor: pointer;
+              transition: transform 0.2s, box-shadow 0.2s;
+              margin-bottom: 16px;
+            " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow)';"
+               onclick="window.location='{% url 'public_restaurant_detail' restaurant.id %}'">
+              
+              <!-- Imagen del restaurante -->
+              <div style="
+                height: 100px;
+                background: linear-gradient(135deg, var(--brand-3), var(--brand-2));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+              ">
+                <span style="font-size: 36px;">🍽️</span>
+                {% if restaurant.rating %}
+                  <span style="
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                  ">
+                    ⭐ {{ restaurant.rating }}
+                  </span>
+                {% endif %}
+              </div>
+              
+              <!-- Info del restaurante -->
+              <div style="padding: 12px;">
+                <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 4px;">
+                  {{ restaurant.name }}
+                </h3>
+                <p style="font-size: 12px; color: var(--muted); margin: 0 0 6px;">
+                  {% if restaurant.locations.first %}
+                    {{ restaurant.locations.first.address_line1|truncatechars:25 }}
+                  {% else %}
+                    Sin dirección
+                  {% endif %}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                  <span class="chip" style="font-size: 11px; padding: 4px 8px;">
+                    {{ restaurant.category.name|default:'General' }}
+                  </span>
+                  <span style="font-size: 11px; color: var(--brand);">
+                    📍 1.5 km
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="col-12">
+            <p class="muted" style="text-align: center; padding: 40px;">
+              No hay restaurantes disponibles en este momento.
+            </p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
 {% endblock %}

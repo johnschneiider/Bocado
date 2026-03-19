@@ -113,14 +113,33 @@ class PublicHomeView(View):
             is_visible=True
         ).values_list('restaurant_id', flat=True)
         
-        restaurants = Restaurant.objects.filter(
+        # Get all categories
+        from restaurants.models import Category
+        categories = Category.objects.all().order_by('order')
+        
+        # Get featured restaurants (top rated, limit 4)
+        featured_restaurants = Restaurant.objects.filter(
+            status='ACTIVE',
+            is_featured=True,
+            id__in=today_menu_filter
+        ).order_by('-rating')[:4]
+        
+        # Get all restaurants for grid
+        all_restaurants = Restaurant.objects.filter(
             status='ACTIVE',
             id__in=today_menu_filter
-        ).annotate(
-            menu_count=Count('daily_menus', filter=Q(daily_menus__is_visible=True))
-        )
+        ).order_by('-rating')
         
-        return render(request, self.template_name, {'restaurants': restaurants})
+        # Check if user is logged in as customer
+        is_customer_logged_in = bool(request.session.get('customer_id'))
+        
+        return render(request, self.template_name, {
+            'categories': categories,
+            'featured_restaurants': featured_restaurants,
+            'all_restaurants': all_restaurants,
+            'is_customer_logged_in': is_customer_logged_in,
+            'city': 'Cali',  # Ciudad por defecto según el peticion.txt
+        })
 
 
 class PublicRestaurantDetailView(View):
@@ -147,6 +166,32 @@ class PublicRestaurantDetailView(View):
             'menus': menus,
             'active_menus': active_menus,
             'today': today,
+        })
+
+
+class CategoryListView(View):
+    template_name = "public/category_detail.html"
+    
+    def get(self, request, category_slug):
+        from restaurants.models import Category
+        from django.shortcuts import get_object_or_404
+        
+        category = get_object_or_404(Category, slug=category_slug)
+        
+        # Get all active restaurants with visible menus in this category
+        today_menu_filter = DailyMenu.objects.filter(
+            is_visible=True
+        ).values_list('restaurant_id', flat=True)
+        
+        restaurants = Restaurant.objects.filter(
+            status='ACTIVE',
+            category=category,
+            id__in=today_menu_filter
+        ).order_by('-rating')
+        
+        return render(request, self.template_name, {
+            'category': category,
+            'restaurants': restaurants,
         })
 
 

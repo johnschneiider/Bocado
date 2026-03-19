@@ -940,3 +940,57 @@ details[open] .chev {
   transition: background 150ms ease;
 }
 
+/* Carrusel de categorías */
+.categories-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+.categories-carousel::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border-radius: 3px;
+}
+.categories-carousel::-webkit-scrollbar-thumb {
+  background: var(--brand-2);
+  border-radius: 3px;
+}
+
+/* Cards de restaurante */
+.restaurant-card {
+  position: relative;
+}
+.restaurant-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-2), var(--brand));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.restaurant-card:hover::before {
+  opacity: 1;
+}
+
+/* Hero section responsiveness */
+@media (max-width: 768px) {
+  .hero-section h1 {
+    font-size: 28px !important;
+  }
+  .hero-section p {
+    font-size: 16px !important;
+  }
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+

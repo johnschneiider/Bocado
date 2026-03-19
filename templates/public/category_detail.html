@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Restaurantes de {{ category.name }} en Cali - Bocado{% endblock %}
+
+{% block content %}
+<div class="category-page">
+  <!-- Header de categoría -->
+  <section class="category-header" style="
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    padding: 40px 0;
+    color: white;
+  ">
+    <div class="container" style="max-width: 1100px;">
+      <a href="{% url 'home' %}" style="color: white; opacity: 0.8; text-decoration: none; margin-bottom: 16px; display: inline-block;">
+        ← Volver al inicio
+      </a>
+      <h1 style="font-size: 32px; margin: 8px 0 4px; font-weight: 700;">
+        🍴 {{ category.name }} en Cali
+      </h1>
+      <p class="muted" style="color: rgba(255,255,255,0.9); margin: 0;">
+        {{ restaurants|length }} restaurantes encontrados
+      </p>
+    </div>
+  </section>
+
+  <!-- Lista de restaurantes de esta categoría -->
+  <section style="padding: 30px 0;">
+    <div class="container" style="max-width: 1100px;">
+      <div class="grid">
+        {% for restaurant in restaurants %}
+          <div class="col-6 col-4">
+            <div class="restaurant-card" style="
+              background: white;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: var(--shadow);
+              cursor: pointer;
+              transition: transform 0.2s, box-shadow 0.2s;
+            " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow)';"
+               onclick="window.location='{% url 'public_restaurant_detail' restaurant.id %}'">
+              
+              <!-- Imagen del restaurante -->
+              <div style="
+                height: 120px;
+                background: linear-gradient(135deg, var(--brand-2), var(--brand));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+              ">
+                <span style="font-size: 42px;">🍽️</span>
+                {% if restaurant.rating %}
+                  <span style="
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                  ">
+                    ⭐ {{ restaurant.rating }}
+                  </span>
+                {% endif %}
+              </div>
+              
+              <!-- Info del restaurante -->
+              <div style="padding: 12px;">
+                <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 4px;">
+                  {{ restaurant.name }}
+                </h3>
+                <p style="font-size: 12px; color: var(--muted); margin: 0 0 8px;">
+                  {% if restaurant.locations.first %}
+                    {{ restaurant.locations.first.address_line1 }}
+                  {% else %}
+                    Sin dirección
+                  {% endif %}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; color: var(--brand); font-weight: 600;">
+                    ⭐ {{ restaurant.rating|default:'4.5' }}
+                  </span>
+                  <span style="font-size: 11px; color: var(--muted);">
+                    📍 1.5 km
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="col-12">
+            <div class="card" style="text-align: center; padding: 40px;">
+              <span style="font-size: 48px; display: block; margin-bottom: 16px;">🍽️</span>
+              <h3>No hay restaurantes de {{ category.name }}</h3>
+              <p class="muted">Vuelve a intentarlo más tarde.</p>
+              <a href="{% url 'home' %}" class="btn btn-primary" style="margin-top: 16px;">
+                Volver al inicio
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
