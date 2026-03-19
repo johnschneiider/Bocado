@@ -57,7 +57,7 @@
                 <a href="{% url 'home' %}" class="dropdown-item" style="display: block; padding: 12px 16px; text-decoration: none; color: var(--text); border-bottom: 1px solid var(--border);">
                   🏠 Ver restaurantes
                 </a>
-                <form method="post" action="/cliente/logout/" style="display: block;">
+                <form method="post" action="{% url 'customer_portal:logout' %}" style="display: block;">
                   {% csrf_token %}
                   <button type="submit" class="dropdown-item" style="display: block; width: 100%; padding: 12px 16px; text-align: left; text-decoration: none; color: var(--danger); background: none; border: none; cursor: pointer;">
                     🚪 Cerrar sesión

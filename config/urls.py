@@ -41,7 +41,8 @@ urlpatterns = [
     # Vistas de categorías
     path("categorias/<slug:category_slug>/", CategoryListView.as_view(), name="category_detail"),
     
-    path("cliente/logout/", include("credits.portal_urls")),
+    # Vistas de cliente (portal de clientes)
+    path("cliente/", include("credits.portal_urls")),
     
     # Vistas de negocio (admin)
     path("dashboard/", include("dashboard.urls")),
@@ -53,7 +54,6 @@ urlpatterns = [
     
     path("orders/", include("orders.urls")),
     path("credits/", include("credits.urls")),
-    path("cliente/", include("credits.portal_urls")),
 ]
 
 if settings.DEBUG:
