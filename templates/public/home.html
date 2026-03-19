@@ -193,36 +193,56 @@
             {% for category in categories %}
               <a href="{% url 'category_detail' category.slug %}" class="category-card" style="
                 flex: 0 0 auto;
-                width: 130px;
+                width: 120px;
                 text-decoration: none;
                 color: var(--text);
                 display: inline-block;
+                text-align: center;
               ">
                 <div style="
-                  background: white;
-                  border-radius: 16px;
-                  padding: 20px;
+                  background: transparent;
+                  border-radius: 50%;
+                  padding: 12px;
                   text-align: center;
-                  box-shadow: var(--shadow);
-                  transition: transform 0.3s, box-shadow 0.3s;
+                  transition: transform 0.3s;
                   white-space: normal;
-                " onmouseover="this.style.transform='translateY(-6px) scale(1.05)'; this.style.boxShadow='var(--shadow-lg)';"
-                   onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='var(--shadow)';">
-                  <div style="font-size: 32px; margin-bottom: 10px;">
-                    {% if category.icon == 'fa-bowl-rice' %}🍜
-                    {% elif category.icon == 'fa-drumstick-bite' %}🍗
-                    {% elif category.icon == 'fa-bread-slice' %}🍞
-                    {% elif category.icon == 'fa-pizza-slice' %}🍕
-                    {% elif category.icon == 'fa-mug-hot' %}☕
-                    {% elif category.icon == 'fa-leaf' %}🥗
-                    {% elif category.icon == 'fa-burger' %}🍔
-                    {% elif category.icon == 'fa-earth-americas' %}🌎
-                    {% elif category.icon == 'fa-pepper-hot' %}🌶️
-                    {% elif category.icon == 'fa-flag' %}🇨🇴
-                    {% else %}🍽️
+                  display: inline-block;
+                " onmouseover="this.style.transform='translateY(-4px) scale(1.1)';"
+                   onmouseout="this.style.transform='translateY(0) scale(1)';">
+                  <!-- Imagen de categoría realista de Unsplash -->
+                  <div style="
+                    width: 80px;
+                    height: 80px;
+                    border-radius: 50%;
+                    margin: 0 auto 8px;
+                    background-size: cover;
+                    background-position: center;
+                    box-shadow: var(--shadow);
+                    {% if category.slug == 'asiatica' %}
+                      background-image: url('https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'carnes' %}
+                      background-image: url('https://images.unsplash.com/photo-1546833998-877b37c2e5c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'panes-tortas' %}
+                      background-image: url('https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'pizza' %}
+                      background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'cafe' %}
+                      background-image: url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'saludable' %}
+                      background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'hamburguesa' %}
+                      background-image: url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'latinoamericana' %}
+                      background-image: url('https://images.unsplash.com/photo-1559749284-91a7de8b7a41?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'mexicana' %}
+                      background-image: url('https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% elif category.slug == 'colombiana' %}
+                      background-image: url('https://images.unsplash.com/photo-1519624026419-56899f91ce74?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+                    {% else %}
+                      background-image: url('https://images.unsplash.com/photo-1495521821757-a1efb6729352?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
                     {% endif %}
-                  </div>
-                  <div style="font-size: 14px; font-weight: 600;">{{ category.name }}</div>
+                  "></div>
+                  <div style="font-size: 12px; font-weight: 600; color: var(--text);">{{ category.name }}</div>
                 </div>
               </a>
             {% endfor %}
