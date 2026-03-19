@@ -73,7 +73,7 @@ class CustomerVerifyView(View):
         return render(request, self.template_name, {"phone": phone})
 
     def post(self, request):
-        from accounts.services import verify_customer_phone
+        from accounts.services import get_or_create_customer_user, verify_customer_phone_direct
         
         phone = request.session.get('pending_phone')
         if not phone:
@@ -83,9 +83,22 @@ class CustomerVerifyView(View):
         if not code:
             return render(request, self.template_name, {"phone": phone, "error": "Ingresa el código de verificación"}, status=400)
         
-        user = verify_customer_phone(phone=phone, code=code)
-        if user is None:
+        # Verify the OTP code
+        is_valid = verify_customer_phone_direct(phone=phone, code=code)
+        if not is_valid:
             return render(request, self.template_name, {"phone": phone, "error": "Código incorrecto o expirado"}, status=400)
+        
+        # Get or create customer user
+        user = get_or_create_customer_user(phone_digits=phone)
+        if user is None:
+            return render(request, self.template_name, {"phone": phone, "error": "Error al crear usuario"}, status=400)
+        
+        # Mark profile as verified
+        from accounts.models import UserProfile
+        profile = UserProfile.objects.filter(user=user).first()
+        if profile:
+            profile.is_phone_verified = True
+            profile.save(update_fields=["is_phone_verified"])
         
         # Store customer in session
         request.session['customer_id'] = str(user.id)

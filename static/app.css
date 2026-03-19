@@ -1000,3 +1000,28 @@ details[open] .chev {
   100% { background-position: -200% 0; }
 }
 
+/* Footer styles */
+.footer {
+  background: #1a1a1a;
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.footer a {
+  color: rgba(255,255,255,0.7);
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: #ffffff;
+}
+
+/* Main content area */
+.main-content {
+  min-height: calc(100vh - 300px);
+  position: relative;
+  z-index: 0;
+}
+

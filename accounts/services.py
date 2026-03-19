@@ -226,14 +226,54 @@ def verify_customer_phone(*, phone: str, code: str, max_attempts: int = 5):
     """
     Verifica el código OTP para un cliente (usuario con role CUSTOMER).
     """
+    # First verify the OTP directly
+    if not verify_customer_phone_direct(phone=phone, code=code, max_attempts=max_attempts):
+        return None
+    
+    # Then get the user profile
+    phone = normalize_phone_digits(phone)
+    profile = UserProfile.objects.filter(phone=phone).select_related("user").first()
+    if profile is None:
+        return None
+    
+    # Mark profile as verified
+    profile.is_phone_verified = True
+    profile.save(update_fields=["is_phone_verified"])
+    
+    return profile.user
+
+
+def create_customer_otp(*, phone: str, ttl_minutes: int = 5) -> str:
+    """
+    Crea un OTP para verificación de cliente.
+    Muestra el código en pantalla (simulación de SMS).
+    """
+    phone = normalize_phone_digits(phone)
+    code = _generate_code()
+    now = timezone.now()
+    
+    # Store the OTP
+    PhoneOTP.objects.create(
+        phone=phone,
+        code_hash=_hash_code(phone=phone, code=code),
+        expires_at=now + timedelta(minutes=ttl_minutes),
+    )
+    
+    # En desarrollo, loguear el código para debug
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"OTP para {phone}: {code}")
+    
+    return code
+
+
+def verify_customer_phone_direct(*, phone: str, code: str, max_attempts: int = 5):
+    """
+    Verifica el código OTP sin buscar el perfil.
+    """
     phone = normalize_phone_digits(phone)
     code = (code or "").strip()
     if not phone or not code:
-        return None
-
-    # Get the user profile (could be customer or admin trying to verify)
-    profile = UserProfile.objects.filter(phone=phone).select_related("user").first()
-    if profile is None:
         return None
 
     now = timezone.now()
@@ -255,32 +295,8 @@ def verify_customer_phone(*, phone: str, code: str, max_attempts: int = 5):
     if hmac.compare_digest(expected, got):
         otp.consumed_at = now
         otp.save(update_fields=["attempts", "consumed_at"])
-        
-        # Mark profile as verified
-        profile.is_phone_verified = True
-        profile.save(update_fields=["is_phone_verified"])
-        
-        return profile.user
+        return True
 
     otp.save(update_fields=["attempts"])
     return None
-
-
-def create_customer_otp(*, phone: str, ttl_minutes: int = 5) -> str:
-    """
-    Crea un OTP para verificación de cliente.
-    Muestra el código en pantalla (simulación de SMS).
-    """
-    phone = normalize_phone_digits(phone)
-    code = _generate_code()
-    now = timezone.now()
-    
-    # Store the OTP
-    PhoneOTP.objects.create(
-        phone=phone,
-        code_hash=_hash_code(phone=phone, code=code),
-        expires_at=now + timedelta(minutes=ttl_minutes),
-    )
-    
-    return code
 
