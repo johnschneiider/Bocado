@@ -1,24 +1,46 @@
 {% extends "base.html" %}
 
-{% block title %}Ingresar - Aladdin{% endblock %}
+{% block title %}Iniciar sesión como negocio - Bocado{% endblock %}
 
 {% block content %}
-  <div class="grid">
-    <div class="col-12">
-      <h1 class="h1">Ingresar</h1>
-      <p class="muted">Ingresa tu teléfono para entrar (sin contraseñas ni códigos).</p>
-    </div>
-    <div class="col-12 col-6">
-      <div class="card">
-        <div class="card-body stack">
-          <form method="post" class="stack">
-            {% csrf_token %}
-            <div>
-              <label>Teléfono</label>
-              <input name="phone" placeholder="3117451274" required />
-            </div>
-            <button class="btn btn-primary" type="submit">Ingresar</button>
-          </form>
+  <div class="container" style="max-width: 500px; padding: 60px 0;">
+    <div class="card">
+      <div class="card-body" style="padding: 32px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <span style="font-size: 48px; display: block; margin-bottom: 12px;">🏪</span>
+          <h2 style="margin: 0;">Panel de Negocio</h2>
+          <p class="muted" style="margin: 8px 0 0;">
+            Accede a tu panel de administración
+          </p>
+        </div>
+
+        {% if error %}
+          <div class="toast toast--error" style="margin-bottom: 16px;">
+            {{ error }}
+          </div>
+        {% endif %}
+
+        <form method="post" class="stack">
+          {% csrf_token %}
+          
+          <div>
+            <label>Teléfono del negocio</label>
+            <input type="tel" name="phone" placeholder="300 000 0000" required 
+                   style="font-size: 16px; padding: 14px;" />
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">
+            Acceder al panel
+          </button>
+        </form>
+
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
+          <p class="muted" style="margin-bottom: 12px;">
+            ¿Eres cliente y quieres pedir comida?
+          </p>
+          <a href="{% url 'customer_login' %}" class="btn" style="width: 100%;">
+            🍽️ Iniciar como cliente
+          </a>
         </div>
       </div>
     </div>
