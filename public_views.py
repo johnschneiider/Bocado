@@ -10,13 +10,91 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 
-from accounts.services import normalize_phone_digits
+from accounts.services import normalize_phone_digits, get_or_create_customer_user, create_customer_otp
 from restaurants.models import Restaurant
 from menus.models import DailyMenu, DailyMenuItem
 from menus.ratelimit import rate_limit
 from orders.models import PaymentMethod
 from orders.services import OrderLineInput, OrderServiceError, create_order
 from credits.models import Customer
+
+
+class CustomerLoginView(View):
+    """
+    Vista de login/registro para clientes.
+    Los teléfonos nuevos se registran como clientes, no como admins.
+    """
+    template_name = "public/customer_login.html"
+
+    def get(self, request):
+        # If already logged in as customer, redirect to home
+        if request.session.get("customer_id"):
+            return redirect('home')
+        return render(request, self.template_name)
+
+    def post(self, request):
+        phone = (request.POST.get("phone") or "").strip()
+        digits = normalize_phone_digits(phone)
+        if not digits:
+            return render(request, self.template_name, {"error": "Ingresa un teléfono válido"}, status=400)
+        
+        # Create or get customer user
+        user = get_or_create_customer_user(phone_digits=digits)
+        if user is None:
+            # Phone belongs to an admin account
+            return render(request, self.template_name, {"error": "Este teléfono ya está registrado como negocio. Usa la opción de login para negocios."}, status=400)
+        
+        # Generate OTP code
+        code = create_customer_otp(phone=digits)
+        
+        # Store phone in session for verification step
+        request.session['pending_phone'] = digits
+        
+        # Show the verification page with the code visible
+        return render(request, "public/customer_verify.html", {
+            "phone": digits,
+            "code": code,  # Show code in development (would be SMS in production)
+        })
+
+
+class CustomerVerifyView(View):
+    """
+    Vista para verificar el código OTP del cliente.
+    """
+    template_name = "public/customer_verify.html"
+
+    def get(self, request):
+        phone = request.session.get('pending_phone')
+        if not phone:
+            return redirect('customer_login')
+        
+        # In a real app, we'd generate a new code here
+        # For now, we'll show the form to enter the code
+        return render(request, self.template_name, {"phone": phone})
+
+    def post(self, request):
+        from accounts.services import verify_customer_phone
+        
+        phone = request.session.get('pending_phone')
+        if not phone:
+            return redirect('customer_login')
+        
+        code = request.POST.get("code", "").strip()
+        if not code:
+            return render(request, self.template_name, {"phone": phone, "error": "Ingresa el código de verificación"}, status=400)
+        
+        user = verify_customer_phone(phone=phone, code=code)
+        if user is None:
+            return render(request, self.template_name, {"phone": phone, "error": "Código incorrecto o expirado"}, status=400)
+        
+        # Store customer in session
+        request.session['customer_id'] = str(user.id)
+        request.session['customer_phone'] = phone
+        
+        # Clear pending phone
+        request.session.pop('pending_phone', None)
+        
+        return redirect('home')
 
 
 class RootPreAuthView(View):

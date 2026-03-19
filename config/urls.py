@@ -18,13 +18,25 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
 
-from public_views import RootPreAuthView, PublicHomeView, PublicRestaurantDetailView, PublicRestaurantOrderView
+from public_views import (
+    RootPreAuthView, 
+    PublicHomeView, 
+    PublicRestaurantDetailView, 
+    PublicRestaurantOrderView,
+    CustomerLoginView,
+    CustomerVerifyView,
+)
 
 urlpatterns = [
     # Vistas públicas tipo Didifood
     path("", PublicHomeView.as_view(), name="home"),
     path("r/<uuid:restaurant_id>/", PublicRestaurantDetailView.as_view(), name="public_restaurant_detail"),
     path("r/<uuid:restaurant_id>/order/", PublicRestaurantOrderView.as_view(), name="public_restaurant_order"),
+    
+    # Vistas de login cliente
+    path("login/", CustomerLoginView.as_view(), name="customer_login"),
+    path("verify/", CustomerVerifyView.as_view(), name="customer_verify"),
+    path("cliente/logout/", include("credits.portal_urls")),
     
     # Vistas de negocio (admin)
     path("dashboard/", include("dashboard.urls")),

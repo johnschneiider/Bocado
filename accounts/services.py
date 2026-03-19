@@ -55,17 +55,82 @@ def get_admin_user_by_phone(*, phone: str, create_if_not_exists: bool = True):
 
 
 @transaction.atomic
+def get_or_create_customer_user(*, phone_digits: str):
+    """
+    Crea un usuario cliente (no admin) para un teléfono nuevo.
+    Los clientes no tienen restaurante asignado.
+    """
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    
+    # Check if user already exists with this phone
+    profile = UserProfile.objects.filter(phone=phone_digits).select_related("user").first()
+    if profile:
+        # Si existe como admin, no permitir login como cliente con el mismo teléfono
+        if profile.role in [UserRole.SAAS_ADMIN, UserRole.RESTAURANT_ADMIN]:
+            return None
+        return profile.user
+    
+    # Create new customer user
+    user = User.objects.create_user(username=f"customer_{phone_digits}")
+    profile = UserProfile.objects.create(
+        user=user,
+        role=UserRole.CUSTOMER,
+        phone=phone_digits,
+        is_phone_verified=False,  # Necesita verificación
+    )
+    
+    return user
+
+
+@transaction.atomic
 def get_or_create_admin_user(*, phone_digits: str):
+    """
+    Crea un usuario admin (negocio) para un teléfono.
+    Solo debe usarse explícitamente cuando el usuario quiere ser negocio.
+    """
     from django.contrib.auth import get_user_model
     from accounts.models import RestaurantMembership
     from restaurants.models import Restaurant, RestaurantLocation
 
     User = get_user_model()
+    
+    # Check if user already exists with this phone
     profile = UserProfile.objects.filter(phone=phone_digits).select_related("user").first()
     if profile:
-        return profile.user
+        # Si ya existe como cliente, permitir migración a negocio
+        if profile.role == UserRole.CUSTOMER:
+            profile.role = UserRole.RESTAURANT_ADMIN
+            profile.is_phone_verified = True
+            profile.save(update_fields=['role', 'is_phone_verified'])
+            
+            # Crear restaurante para el nuevo negocio
+            restaurant = Restaurant.objects.create(
+                name=f"Restaurante {phone_digits[-4:]}",
+                phone=phone_digits,
+            )
+            
+            RestaurantLocation.objects.create(
+                restaurant=restaurant,
+                name="Principal",
+                address_line1="Dirección por defecto",
+                is_primary=True,
+            )
+            
+            RestaurantMembership.objects.create(
+                user=profile.user,
+                restaurant=restaurant,
+                is_active=True,
+            )
+            
+            return profile.user
+        
+        # Si ya es admin, retornar el usuario
+        if profile.role in [UserRole.SAAS_ADMIN, UserRole.RESTAURANT_ADMIN]:
+            return profile.user
     
-    # Create user and profile
+    # Create new admin user
     user = User.objects.create_user(username=f"admin_{phone_digits}")
     profile = UserProfile.objects.create(
         user=user,
@@ -76,7 +141,7 @@ def get_or_create_admin_user(*, phone_digits: str):
     
     # Create a default restaurant for this admin
     restaurant = Restaurant.objects.create(
-        name=f"Restaurante {phone_digits[-4:]}",  # Use last 4 digits as name
+        name=f"Restaurante {phone_digits[-4:]}",
         phone=phone_digits,
     )
     
@@ -154,4 +219,68 @@ def verify_phone_otp(*, phone: str, code: str, max_attempts: int = 5):
 
     otp.save(update_fields=["attempts"])
     return None
+
+
+@transaction.atomic
+def verify_customer_phone(*, phone: str, code: str, max_attempts: int = 5):
+    """
+    Verifica el código OTP para un cliente (usuario con role CUSTOMER).
+    """
+    phone = normalize_phone_digits(phone)
+    code = (code or "").strip()
+    if not phone or not code:
+        return None
+
+    # Get the user profile (could be customer or admin trying to verify)
+    profile = UserProfile.objects.filter(phone=phone).select_related("user").first()
+    if profile is None:
+        return None
+
+    now = timezone.now()
+    otp = (
+        PhoneOTP.objects.select_for_update()
+        .filter(phone=phone, consumed_at__isnull=True, expires_at__gt=now)
+        .order_by("-created_at")
+        .first()
+    )
+    if otp is None:
+        return None
+
+    if otp.attempts >= max_attempts:
+        return None
+
+    otp.attempts += 1
+    expected = otp.code_hash
+    got = _hash_code(phone=phone, code=code)
+    if hmac.compare_digest(expected, got):
+        otp.consumed_at = now
+        otp.save(update_fields=["attempts", "consumed_at"])
+        
+        # Mark profile as verified
+        profile.is_phone_verified = True
+        profile.save(update_fields=["is_phone_verified"])
+        
+        return profile.user
+
+    otp.save(update_fields=["attempts"])
+    return None
+
+
+def create_customer_otp(*, phone: str, ttl_minutes: int = 5) -> str:
+    """
+    Crea un OTP para verificación de cliente.
+    Muestra el código en pantalla (simulación de SMS).
+    """
+    phone = normalize_phone_digits(phone)
+    code = _generate_code()
+    now = timezone.now()
+    
+    # Store the OTP
+    PhoneOTP.objects.create(
+        phone=phone,
+        code_hash=_hash_code(phone=phone, code=code),
+        expires_at=now + timedelta(minutes=ttl_minutes),
+    )
+    
+    return code
 

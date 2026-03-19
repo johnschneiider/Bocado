@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Verificar teléfono - Bocado{% endblock %}
+
+{% block content %}
+  <div class="menu-publico">
+    <div class="container" style="max-width: 500px; padding: 60px 0;">
+      <div class="card">
+        <div class="card-body" style="padding: 32px;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 48px; display: block; margin-bottom: 12px;">🔐</span>
+            <h2 style="margin: 0;">Verifica tu teléfono</h2>
+            <p class="muted" style="margin: 8px 0 0;">
+              Hemos enviado un código a <strong>{{ phone }}</strong>
+            </p>
+          </div>
+
+          {% if error %}
+            <div class="toast toast--error" style="margin-bottom: 16px;">
+              {{ error }}
+            </div>
+          {% endif %}
+
+          <form method="post" class="stack">
+            {% csrf_token %}
+            
+            <div>
+              <label>Código de verificación</label>
+              <input type="text" name="code" placeholder="XXXXXX" required 
+                     style="font-size: 24px; text-align: center; letter-spacing: 8px; padding: 16px;" />
+            </div>
+            
+            <p class="muted" style="font-size: 13px; margin: 0; text-align: center;">
+              {% if code %}
+                <span style="background: var(--surface-2); padding: 8px 12px; border-radius: 8px; display: inline-block;">
+                  🔑 Código de prueba: <strong>{{ code }}</strong>
+                </span>
+              {% else %}
+                En producción, recibirías este código por SMS.
+              {% endif %}
+            </p>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">
+              Verificar y entrar
+            </button>
+          </form>
+
+          <div style="margin-top: 24px; text-align: center;">
+            <a href="{% url 'customer_login' %}" class="muted" style="font-size: 14px;">
+              ← Usar otro teléfono
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

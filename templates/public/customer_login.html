@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión - Bocado{% endblock %}
+
+{% block content %}
+  <div class="menu-publico">
+    <div class="container" style="max-width: 500px; padding: 60px 0;">
+      <div class="card">
+        <div class="card-body" style="padding: 32px;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 48px; display: block; margin-bottom: 12px;">📱</span>
+            <h2 style="margin: 0;">Iniciar sesión</h2>
+            <p class="muted" style="margin: 8px 0 0;">
+              Ingresa tu número de teléfono para continuar
+            </p>
+          </div>
+
+          {% if error %}
+            <div class="toast toast--error" style="margin-bottom: 16px;">
+              {{ error }}
+            </div>
+          {% endif %}
+
+          <form method="post" class="stack">
+            {% csrf_token %}
+            
+            <div>
+              <label>Teléfono</label>
+              <input type="tel" name="phone" placeholder="+57 300 000 0000" required 
+                     style="font-size: 18px; padding: 16px;" />
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">
+              Continuar →
+            </button>
+          </form>
+
+          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
+            <p class="muted" style="margin-bottom: 12px;">
+              ¿Eres un negocio y quieres acceder a tu panel?
+            </p>
+            <a href="{% url 'accounts:login' %}" class="btn" style="width: 100%;">
+              🏪 Iniciar como negocio
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

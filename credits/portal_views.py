@@ -248,5 +248,5 @@ class CustomerPortalMenuAvailabilityView(View):
 class CustomerPortalLogoutView(View):
     def post(self, request):
         clear_customer_session(request)
-        return redirect("/accounts/login/")
+        return redirect("home")
 
