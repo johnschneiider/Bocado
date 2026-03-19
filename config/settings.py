@@ -25,7 +25,7 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-dev-only-key-change-in-p
 
 DEBUG = env.bool("DEBUG", default=True)
 
-ALLOWED_HOSTS = [h.strip() for h in env("ALLOWED_HOSTS", default="localhost,127.0.0.1").split(",") if h.strip()]
+ALLOWED_HOSTS = [h.strip() for h in env("ALLOWED_HOSTS", default="localhost,127.0.0.1,testserver").split(",") if h.strip()]
 
 
 # Application definition
